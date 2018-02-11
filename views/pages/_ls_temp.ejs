@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<% include ../partials/head %>
+<title>GPS - Трекер</title>
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+
+    <div class="col-md-4"><a href=/>в корень</a><br><hr><a href=#>как я до этого долшел</a><br><a href=#>как это работает</a><br><a href=#>оборудоание</a></div>
+    <div class="col-md-8">
+        <ul>
+            <% for(var i=0; i<supplies.length; i++) { %>
+            <li>
+                <a href='/ls_log_term?file=<%= supplies[i] %>'>
+                    <%= supplies[i] %>
+                </a>
+            </li>
+            <% } %>
+        </ul>
+    </div>
+
+
+
+
+
+<% include ../partials/footer %>
+<% include ../partials/scripts %>

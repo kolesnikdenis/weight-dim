@@ -1,0 +1,160 @@
+<% include ../partials/scripts %>
+<!--
+<%- id_dst %>
+<%- id_production %>
+<%- production %>
+<%- name %>
+<%- p_name %>
+<%- arr_weight %>
+-->
+
+<center><h1>"<%- name %>"  <span class = "label label-default"><%- p_name %></span></h1></center>
+
+<center>
+<div class="row">
+        <div class="col-md-3"><!-- .col-md-3 --></div>
+        <div class="col-md-6">
+
+
+	</div>
+        <div class="col-md-3"><!-- .col-md-3--></div>
+      </div>
+
+<div class="row">
+        <div class="col-md-3"><!-- .col-md-3 --></div>
+        <div class="col-md-6">
+
+<form class="bs-example bs-example-form" role="form">
+     <div class="input-group input-group-lg">
+      <span class="input-group-addon">вес <span class="label label-default">крыло</span></span>
+      <input id=output0 type="text" class="form-control" placeholder="0.0 кг.">
+      <a href="#" class="input-group-addon btn btn-success get_weight">фиксировать</a>
+    </div>
+  </form>
+ </div>
+        <div class="col-md-3"><!-- .col-md-3--></div>
+      </div>
+
+
+<div class="row">
+        <div class="col-md-3"><!-- .col-md-3--></div>
+        <div class="col-md-6">
+            <center>
+                <!-- <a href="#" id="commit_and_continue" style="width:100%" class="btn btn-info" role="button" ><span class="glyphicon glyphicon-plus"></span> фиксировать вес и продолжить взвешивание</a><br> -->
+                <!-- <a href="#" style="width:100%" class="btn btn-success" role="button"><span class="glyphicon glyphicon-ok"></span> фиксировать вес и закрыть</a><br> -->
+                <a href="/select?dot_dst=<%- id_dst %>&production=<%- production %>" style="width:100%" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-remove"></span> Закрыть </a>
+                                 <table  class="table table-hover">
+                                   <thead>
+                                     <tr>
+                                       <th>Номер</th>
+                                       <th>Вес</th>
+                                       <th>управление</th>
+                                     </tr>
+                                   </thead>
+                                   <tbody id=myTable>
+
+                                   </tbody>
+                                 </table>
+            </center>
+</div>
+        <div class="col-md-3"><!-- .col-md-3 --></div>
+      </div>
+
+
+
+<script type="text/javascript">
+ $('.get_weight').click(function(e) {
+  $.ajax({
+	url: "/get_weight",
+         type: "GET",
+         dataType: "json",
+	 contentType: "application/json",cache: false,timeout: 5000,
+	complete: function (aa) {
+		if (typeof +aa.responseText == "number" && +aa.responseText>0  ) {
+			$("#output0").val(aa.responseText+" кг.");
+			send_to_server_obj();
+		} else  alert("не стабильные показания "); 
+
+	},
+	success: function (data) {
+		//$("#output0").val(data+" кг.");
+		//send_to_server_obj();
+		console.log(data);
+	},
+	error: function () {
+	}
+	});
+ });
+
+ function Ohran1( ) { location.href = '/ves' }
+ function del_weight(index,ves_arr) {
+     ves_arr.splice(index, 1);
+     $.ajax({
+         url: "/weight_change",
+         type: "GET",
+         dataType: "json",
+         data: {
+             id_production: "<%- id_production %>",
+             production: "<%- production %>",
+             weight_array: ves_arr
+         },
+         contentType: "application/json",
+         cache: false,
+         timeout: 5000,
+         complete: function () {
+             //console.log('process complete');
+         },
+         success: function (data) {
+             //console.log(data);
+             addRow(data);
+             //console.log('process sucess');
+         },
+         error: function () {
+             //console.log('process error');
+         }
+     });
+ }
+
+ function send_to_server_obj(){
+  var digits_only1 = $("#output0").val().split(' ')[0];
+  $.ajax({
+                url: "/ves_add",
+                type: "GET",
+                dataType: "json",
+                data: {
+                    id_production: "<%- id_production %>",
+                    production: "<%- production %>",
+                    ves: digits_only1
+                },
+                contentType: "application/json",
+                cache: false,
+                timeout: 5000,
+                complete: function() {
+                  //console.log('process complete');
+                },
+                success: function(data) {
+                  //console.log(data);
+                  addRow(data);
+                  //console.log('process sucess');
+               },
+                error: function() {
+                  //console.log('process error');
+                },
+              });
+
+	}
+ function addRow(ves_arr){
+  $("#myTable").empty();
+  console.log(ves_arr);
+  ves_arr.map(function(a,i){ ves_arr[i]=+a; });
+  for (var i=0; i < ves_arr.length; i++){
+	$('#myTable').append('<tr><td>'+parseInt(i+1)+'</td><td>'+(ves_arr[i])+'</td><td><a href=# onclick="del_weight(\''+i+'\',['+ves_arr+'])">X</a></td></tr>');
+
+  }
+ }
+ $('#commit_and_continue').click(function(e) {
+	send_to_server_obj();
+ });
+
+ addRow(<%- arr_weight %>);
+</script>

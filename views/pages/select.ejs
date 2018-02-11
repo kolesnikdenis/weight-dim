@@ -1,0 +1,141 @@
+<% include ../partials/scripts %>
+<!--
+<%- obj_shipment %> <br>
+<%- ps %> <br>
+<%- name %> <br>
+<%- id_dst %> <br>
+<%- goods_chicken %> <br> -->
+
+<center><h1>"<%- name %>" </h1></center>
+
+<div class="row">
+        <div class="col-md-3"><!-- .col-md-3 --></div>
+        <div class="col-md-6">
+		<center>
+		<div style="width:100%"  class="btn-group-vertical btn-group-lg btn-lg ">
+
+
+			<span class="badge">выбор кол-во ящиков</span>
+			<select id=boxing class="selectpicker" data-width="100%" data-icon="glyphicon-remove" id=coluntbox title="выбери" data-style="btn-danger">
+				<optgroup label="кол-во ящиков">
+					<option data-subtext="ящик" data-icon="glyphicon-shopping-cart">1</option>
+				    <option data-subtext="ящика" data-icon="glyphicon-shopping-cart">2</option>
+				    <option data-subtext="ящика" data-icon="glyphicon-shopping-cart">3</option>
+				    <option data-subtext="ящика" data-icon="glyphicon-shopping-cart">4</option>
+				    <option data-subtext="ящиков" data-icon="glyphicon-shopping-cart">5</option>
+				    <option data-subtext="ящиков" data-icon="glyphicon-shopping-cart">6</option>
+				    <option data-subtext="ящиков" data-icon="glyphicon-shopping-cart">7</option>
+				</optgroup>
+			</select>
+		</div><br>
+			<a class="btn btn-primary btn-lg" href="/create_excel" role="button"><span class="glyphicon glyphicon-ok"></span> Сформировать накладную <span class="glyphicon glyphicon-ok"></span></a>
+			<br>
+			<!-- <a href="/" class="btn btn-danger btn-lg" role="button"><span class="glyphicon glyphicon-remove"></span> Закрыть накладнаю <span class="glyphicon glyphicon-remove"></span></a>
+            <br>
+            <br>-->
+            <a href="#" onclick="del_order();" class="btn btn-danger btn-lg" role="button"><span class="glyphicon glyphicon-remove"></span>удалить накладную<span class="glyphicon glyphicon-remove"></span></a>
+		</center>
+	</div>
+        <div class="col-md-3"><!-- .col-md-3 --></div>
+      </div>
+
+<script type="text/javascript">
+ function Ohran1( id ) { location.href = '/ves?dot_dst=<%- id_dst %>&ps=<%- ps %>&id_production='+id }
+
+ function del_order() {
+     $.ajax({
+         url: "/del_order",
+         type: "GET",
+         dataType: "json",
+         data: { tes: 123 },
+         contentType: "application/json",
+         cache: false,
+         timeout: 5000,
+         complete: function () {
+             //console.log('process complete');
+         },
+         success: function (data) {
+             console.log(data);
+             location.href = '/';
+         },
+         error: function () {
+             //console.log('process error');
+         }
+     });
+ }
+
+ $('#boxing').selectpicker();
+ $('select.selectpicker').on('change', function(){
+     var selected = $('.selectpicker option:selected').val();
+     $('.selectpicker').selectpicker('setStyle', 'btn-danger', 'remove');
+     $('.selectpicker').selectpicker('setStyle', 'btn-success', 'add');
+     $.ajax({
+         url: "/change_tare",
+         type: "GET",
+         dataType: "json",
+         data: {
+             tare: selected
+         },
+         contentType: "application/json",
+         cache: false,
+         timeout: 5000,
+         complete: function () {
+             //console.log('process complete');
+         },
+         success: function (data) {
+             //console.log(data);
+             addRow(data);
+             //console.log('process sucess');
+         },
+         error: function () {
+             //console.log('process error');
+         }
+     });
+ });
+
+ var obj_shipment = <%- obj_shipment %>;
+ var tare = obj_shipment.dst.tare;
+ console.log(tare);
+ if (tare > 0){
+     $('.selectpicker').val(tare);
+     $('.selectpicker').selectpicker('refresh');
+     $('.selectpicker').selectpicker('setStyle', 'btn-danger', 'remove');
+     $('.selectpicker').selectpicker('setStyle', 'btn-success', 'add');
+ }
+ var goods=(<%- goods_chicken %>);
+ var weight=obj_shipment.shipment.<%- ps %>;
+
+ var count = 0;
+ for (var k in goods.product) {
+    if (goods.product.hasOwnProperty(k)) {
+      var e="";
+      var class_btn="";
+      if (typeof(weight[k]) === "object"){
+          summ=0;
+          for (var t=0; t<weight[k].length; t++){
+              var st = weight[k][t];
+              summ=parseFloat(summ) + parseFloat(st);
+          }
+          e=summ+" кг.";
+          class_btn="btn btn-success";
+      }
+      else {
+          e="0.0 кг.";
+          class_btn="btn btn-default";
+      }
+      var r=$('<button/>').attr({
+        type: "button",
+        class: class_btn,
+        onclick: "Ohran1('"+k+"')"
+      });
+    r.append(goods.product[k]+" ");
+    var span=$('<span/>').attr({
+        class: "badge"
+    });
+    span.append(e);
+    r.append(span)
+    $("div.btn-group-lg").append(r);
+
+  }
+  }
+</script>

@@ -1,0 +1,6 @@
+{
+    "root_path" : "/var/www/html/weight/",
+    "invoice" : "/var/www/html/weight/public/invoice/",
+    "tmp_json" : "/var/www/html/weight/tmp/",
+    "public": "/public/"
+}
