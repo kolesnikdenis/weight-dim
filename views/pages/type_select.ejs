@@ -1,27 +1,76 @@
 <% include ../partials/scripts %>
-<!-- <%- shipment %> -->
-
-<div class="row">
-        <div class="col-md-3"><!-- .col-md-3--></div>
-        <div class="col-md-6">
-		<div style="width:100%"  class="btn-group-vertical btn-group-lg">
-
-		<button type="button" class="btn btn-default" id=turkey onclick="select('chicken')">курица</button>
-		<button type="button" class="btn btn-default" id=chicken onclick="select('turkey')">индюшка</button>
-
-		</div>
-	</div>
-        <div class="col-md-3"><!-- .col-md-3--></div>
+<!--
+<%- shipment %>
+storeprice:
+<%- type_operation %>
+<%- storeprice %>
+<%- destination_type %>
+-->
+<header class="head-points">
+  <div class="container">
+    <div class="row">
+        <div class="col-2">
+          <a href="/sel_products?type=<%- type_operation %>" class="back">
+            <img src="../../public/img/back.svg" astore_pricelt="назад">
+          </a>
+        </div>
+        <div class="col-8">
+          <h1> Выберите категорию </h1>
+        </div>
+        <div class="col-1">
+          <a href="#" class="reconnect-link">
+              <img src="../../public/img/barcode.svg" alt="переподключится">
+              <span class="invoice-link_text"></span>
+          </a>
       </div>
+    </div>
+  </div>
+</header> 
 
-      <script type="text/javascript">
+<section class="type-select">
+	<div class="container">
+    <div class="row">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a class="block_link" href="/">Главная</a></li>
+          <li class="breadcrumb-item"><a class="block_link header_text" href="/sel_products?type=<%- type_operation %>"></a></li>
+          <li class="breadcrumb-item active" aria-current="page"><%- name %></a></li>  
+        </ol>
+      </nav>
+    </div>
+	    <div class="row">		
+	        <div class="col-12 offset-md-2 col-md-8">
+			<button type="button" class="btn btn-choose" id=chicken onclick="select('chicken')">Курица</button>
+		</div>
+	        <div class="col-12 offset-md-2 col-md-8">
+			<!-- <div style="width:100%"  class="btn-group-vertical btn-group-lg"> -->
+			<button type="button" class="btn btn-choose" id=turkey onclick="select('turkey')">Индюшка</button>
+		</div>
+		<div class="col-12 offset-md-2 col-md-8">
+			<button type="button" class="btn btn-choose" id=pork onclick="select('pork')">Свинина</button>
+		</div>
+	    </div>
+	</div>
+</section>
+
+<script type="text/javascript">
         var weight = <%- shipment %>;
         for (var k in weight) {
             if (weight.hasOwnProperty(k)) {
                 console.log(k);
-                $('#'+k).toggleClass('disabled', true);
+                $('#'+k).toggleClass('', true);  //disabled
                 console.log($('#'+k).val());
             }
         }
-       function select(type ) { location.href = '/select?dot_dst=<%- id_dst %>&production='+type }
+       function select(type ) { 
+		//console.log("<%- type_operation %>");
+		location.href = '/select?dot_dst=<%- id_dst %>&production='+type+'&type=<%- type_operation %>&destination_type=<%- destination_type %>'
+	 }
+
+/*if ((<%- file -%>)  =="1" ){
+	for (var i = 0; $('.block_link').length >i; i++ ){
+		$('.block_link')[i].href="javascript:alert('Не закрыта накладная')";
+		
+	}
+}*/
 </script>

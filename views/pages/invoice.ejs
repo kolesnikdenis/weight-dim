@@ -1,0 +1,267 @@
+<% include ../partials/scripts  %>
+<!-- include /var/www/html/weight/views/pages/invoice_print.ejs  -->
+<!--
+json: <%- json %>
+price: <%- price %>
+print: <%- print %>
+-->
+<style>
+#lline{
+ display: flex;
+ flex-flow: row-reverse;
+}
+
+@media print
+{
+ .noprint {display:none;}
+}
+
+</style>
+
+<header class="head-points noprint">
+  <div class="container">
+    <div class="row">
+        <div class="col-2">
+          <a href="javascript:window.history.back();" class="back"> 
+            <img src="../../public/img/back.svg" astore_pricelt="назад">
+          </a>
+        </div>
+        <div class="col-8">
+          <h1>Накладная</h1>
+        </div>
+    </div>
+  </div>
+</header> 
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div id=headr_div>
+                <div id=line class="line-title">
+                    <h1 id=p>Перемещение запасов № </h1>
+                    <div id=number>__</div>  от 
+                    <div id=from_date>2018-11-11 02:42:17</div>
+                </div>
+                <div class="d-flex wrapper-direction">
+                    <div id=line>От кого: 
+                        <div id=from_contragen_store class="direction_to">отправитель</div>
+                    </div>
+                    <div id=line class="line-recipient">Кому:  
+                        <div id=to_contragen_store class="direction_to">получатель</div>
+                    </div>
+                </div>
+            </div>
+            <table id=table width='100%' class="table-invoice">
+                <thead>
+                    <tr width="100%">
+                        <th>№</th>
+                        <!-- <th>Код</th> -->
+                        <th>Товары</th>
+                        <th>Количество</th>
+                        <th>Тара</th>
+                        <th>Цена</th> 
+                        <th>Стоимость</th>
+                    </tr>
+                </thead>
+                <tbody id="table-invoice__info"></tbody>
+            </table>
+
+            <div id=footer_div>
+                <div>
+                    <div id="full_boxes" class="d-flex">
+                        <div class="total-boxes">Итого тара:</div>
+                        <div>
+                            <div id="tare"></div><!--
+                            <div>1,8 - <p id="18">0</p></div>
+                            <div>1,26 - <p id="126">0</p></div>
+                            <div>0,85 - <p id="08">0</p></div> -->
+                        </div>
+                    </div>
+                </div>
+                <div id=lline >
+                    <div id=full_cost>123</div>
+                </div>
+                <div id=line>
+                    <div id=responsible_from>Отпустил: ____________________________</div> 
+                    <div id=responsible_to>Получил: ____________________________</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+
+
+var obj=(<%- json  %>);
+var goods_chicken=(<%- goods_chicken %>);
+
+
+var summ_tare = {};
+console.log(obj['package'],"tare");
+Object.keys(obj['package']).map(function (type_product) {
+    if (type_product.indexOf("0000")<0){
+        Object.keys(obj['package'][type_product]).map(function (tare_arr) {
+            obj['package'][type_product][tare_arr].map(function (count_tare,i) {
+                tare_id_1c = obj.type_package[type_product][tare_arr][i];
+                //console.log(count_tare);
+                if (!summ_tare[tare_id_1c]) {
+                    summ_tare[tare_id_1c] = { ItemDescription: obj.package[tare_id_1c].ItemDescription, Quantity: +count_tare };
+                } else {
+                    summ_tare[tare_id_1c].Quantity += +count_tare;
+                }
+            });
+        })
+    }
+})
+
+console.log(summ_tare);
+for (test in summ_tare ){
+    tare_line=$('<div/>', {
+        id: 'somee-id'});
+    p = $('<p/>').text(summ_tare[test].ItemDescription +"  - " +summ_tare[test].Quantity);
+    tare_line.append(p);
+    $('#tare').append(tare_line);
+    console.log($('#tare'));
+}
+var store_price=<%- (!!locals.price)?price:'{}' %>;
+var full_summ=0;
+//$('#table').append("<tr><td>1</td><td></td><td>1</td><td>1</td><td>1</td></tr>");
+$("#from_date").text(obj.dst.create_data_time);
+console.log(obj)
+if ( obj.type == "shipment") {
+    $("#from_contragen_store").text("Основной склад");
+    $("#to_contragen_store").text(obj.dst.name);
+}else {
+    $("#from_contragen_store").text(obj.dst.name);
+    $("#to_contragen_store").text("Основной склад");
+}
+
+function add(in_obj) {
+   var num_product=0;
+   var p = Object.keys(in_obj);
+   console.log(p);
+   for ( var pi=0; pi<p.length; pi++ ) {
+    var category_product=p[pi];
+    var product = in_obj[category_product];
+    var i=0;
+    for (var k in product) {
+        if (product.hasOwnProperty(k)) {
+            i++;
+            var summ=0;
+		    var price=0;
+            if ( obj.type == "arrival")
+                $("#from_contragen_store").text(obj.contragent_name[category_product][k]);
+            if (typeof(product[k]) === "object") {
+                summ = 0;
+                for (var t = 0; t <product[k].length; t++) {
+                    var st = product[k][t];
+                    summ = parseFloat(summ) + parseFloat(st);
+
+                }
+            }
+            if ( store_price && k && store_price[k] && store_price[k].Price) {
+                price=store_price[k].Price;
+                console.log("price:", price, " descr:", store_price[k].Description)
+            }else {
+                price=0;
+            }
+
+            full_summ += price*summ;
+            summ=summ.toFixed(3);
+	    num_product++;
+	    $('#table-invoice__info').append("<tr><td>"+num_product+"</td><td>"+goods_chicken[category_product].product[k]+"</td><td>"+summ+" кг</td><td></td><td>"+price.toFixed(3)+"</td><td>"+(price*summ).toFixed(3)+"</td></tr>");
+
+	}
+    }
+   }
+}
+add(obj.shipment);
+full_summ= full_summ.toFixed(3);
+$("#full_cost").text("Итого: " +full_summ+" грн");
+
+function save_and_del_tmp(print){
+    $.ajax({
+        url: "/send_to_1c",
+        type: "GET",
+        cache: false,
+        timeout: 5000,
+        complete: function() {
+            console.log('process complete');
+        },
+        success: function(data) {
+            console.log(data);
+		if (print=='1'){
+
+            setTimeout(function () { window.print(); }, 500);
+            window.onfocus = function () { setTimeout(function () { window.location.href = "/"; }, 500); }
+		}else {
+			alert("Накладная сохранена");
+			window.location.href="/";
+		}
+        },
+        error: function() {
+            console.log("какая то ошибка")
+            console.log('process error');
+        },
+    });
+
+}
+
+
+
+var summ_tare = {};
+console.log(obj['package']);
+Object.keys(obj['package']).map(function (type_product) {
+    console.log(type_product);
+    if (type_product.indexOf("0000")<0){
+        Object.keys(obj['package'][type_product]).map(function (tare_arr) {
+            obj['package'][type_product][tare_arr].map(function (count_tare,i) {
+                tare_id_1c = obj.type_package[type_product][tare_arr][i];
+                //console.log(count_tare);
+                if (!summ_tare[tare_id_1c]) {
+                    summ_tare[tare_id_1c] = { ItemDescription: obj.package[tare_id_1c].ItemDescription, Quantity: +count_tare };
+                } else {
+                    summ_tare[tare_id_1c].Quantity += +count_tare;
+                }
+            });
+        })
+    } else {
+        //console.log( Object.keys(obj['package'][type_product]), type_product);
+        if ( !summ_tare[type_product] ) {
+            console.log("create ",type_product , +obj.package[type_product].Quantity );
+            summ_tare[type_product] = { ItemDescription: obj.package[type_product].ItemDescription, Quantity: +obj['package'][type_product].Quantity };
+        }else{
+            summ_tare[type_product].Quantity += +obj.package[type_product].Quantity;
+        };
+
+    }
+})
+
+console.log(summ_tare);
+
+
+for (test in summ_tare ){
+    tare_line=$('<div/>', {
+        id: 'somee-id'});
+    p = $('<p/>').text(summ_tare[test].ItemDescription +"  - " +summ_tare[test].Quantity);
+    tare_line.append(p);
+    $('#tare').append(tare_line);
+    console.log($('#tare'));
+}
+
+</script>
+
+    <div class="container">
+        <div class="row">
+            <div class=noprint>
+                <a href="javascript:save_and_del_tmp('1')" class="btn btn-prints">
+                    <img src="../../public/img/printer.svg" alt="печать">
+                </a>  
+                <a href="javascript:save_and_del_tmp('0')" class="btn btn-weight_fix">Сохранить</a> 
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

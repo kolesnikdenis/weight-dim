@@ -4,9 +4,15 @@ html {
   position: relative;
   min-height: 100%;
 }
+
+.scanBody {
+	background: red;
+}
 body {
   /* Margin bottom by footer height */
   margin-bottom: 60px;
+  font-family: 'Open Sans', sans-serif;
+  background: #f8f8f8;
 }
 .footer {
   position: absolute;
@@ -23,8 +29,3 @@ body {
 -------------------------------------------------- */
 /* Not required for template or sticky footer method. */
 
-.container {
-  width: auto;
-  max-width: 680px;
-  padding: 0 15px;
-}

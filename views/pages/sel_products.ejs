@@ -1,0 +1,136 @@
+<% include ../partials/scripts %>
+<!--<%- dst_point %> -->
+
+
+<header class="head-points">
+	<div class="container">
+		<div class="row">
+			<div class="col-2">
+				<a href="/" class="back">
+					<img src="../../public/img/back.svg" alt="назад">
+				</a>
+			</div>
+			<div class="col-8">
+				<h1 class="header_text"></h1>
+			</div>
+			<div class="col-2 text-right">
+				<a href="/show_setting" class="scale">
+					<img src="../../public/img/weight-scale.svg" alt="весы">
+				</a>
+			</div>
+		</div>
+	</div>
+</header>
+
+<section class="sel_products">
+	<div class="container">
+		<div class="row">
+			<nav aria-label="breadcrumb">
+			    <ol class="breadcrumb">
+			    	<li class="breadcrumb-item"><a href="/">Главная</a></li>
+			    	<li class="breadcrumb-item active header_text" aria-current="page"></li>
+			    </ol>
+			</nav>
+		</div>
+		<div class="row">
+			<div class="col-12">
+				<ul class="nav nav-tabs" id="myTab" role="tablist">
+					<li class="nav-item" onclick="show_contragent()">
+					    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" role="tab" aria-controls="home" aria-selected="true">Контрагенты</a>
+					</li>
+					<li class="nav-item nav-item_inside" onclick="show_moving()">
+					    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#profile" role="tab" aria-controls="profile" aria-selected="false">Внутренняя</a>
+					</li>					
+				</ul>
+				<div class="tab-content" id="myTabContent">
+				    <!-- <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab"></div>
+				    				<div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab"></div> -->				
+				</div>
+			</div>
+    		<div class="col-12 offset-lg-3 col-lg-6"> 
+				<div class="choose-point"> 
+
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script type="text/javascript">
+ function add_button(obj,i_class,type){
+ for (var k in obj ) {
+    if (obj.hasOwnProperty(k)) {
+       var btn_class="";
+       if (<%- dst_point %> > 0) {
+         if (k == <%- dst_point %>) {
+             btn_class="btn "+i_class+" btn-dot";
+         }else {
+            btn_class="btn "+i_calss+" disabled btn-dot ";
+         }
+       } else {
+            btn_class="btn "+i_class+" btn-dot";
+       }
+       var r=$('<input/>').attr({
+                             type: "button",
+                             class: btn_class,
+                             onclick: "Ohran1('"+k+"','"+type+"')",
+                             value: obj[k]
+                         });
+        $("div.tab-content").append(r);
+    }
+  }
+ }
+
+function Ohran1(id,to) {  location.href = '/type_select?dot_dst='+id+'&type='+to+'&destination_type='+to+'&type_operation=<%- type_operation %>' }
+// function Ohran1(id,to) {  location.href = '/type_select?dot_dst='+id+'&type=<%- type_operation %>&destination_type='+to+'&type_operation=<%- type_operation %>' }
+ var type_contragent="<%- type_operation %>";
+ var points_store=(<%- points_store %>);
+ var points_contragent=(<%- points_contragent %>);
+ points_contragent['tmp']={};
+
+ var filters=(<%- filters %>)
+
+ var points = { "points_sale_new":{} };
+ if ( type_contragent=="arrival") {
+     Object.keys(points_contragent.type).forEach(function (element, tt) {
+         if ((points_contragent.type[element]) == type_contragent) {
+             points_contragent.tmp[element] = points_contragent.points_sale[element];
+         }
+     });
+     points_contragent.tmp = funFilter(filters.arrival,points_contragent.tmp);
+
+     points = { "contragent": points_contragent.tmp, "shipment": {}  };
+     $( "li.nav-item_inside" ).addClass("d-none");
+ }else {
+	Object.keys(points_contragent.type).forEach(function (element, tt) {
+	 if ((points_contragent.type[element]) == type_contragent) {
+		points_contragent.tmp[element] = points_contragent.points_sale[element];
+	 }
+	});
+    points = { "shipment": funFilter(filters.store,points_store.store_catalogue), 
+               "contragent": funFilter(filters.shipment,points_contragent.tmp)
+             };
+
+ }
+ add_button(points.shipment,"hide-shipment","store");
+ add_button(points.contragent,"btn_visible","contragent");
+</script>
+
+<script type="text/javascript">
+   function show_moving() {
+   		$(".hide-shipment").addClass("d-block");
+   		$(".btn_visible").addClass("d-none");
+   }
+
+   function show_contragent() {
+   		$(".btn_visible").removeClass("d-none");
+   		$(".hide-shipment").removeClass("d-block");
+   }  
+</script> 
+
+<!-- <script type="text/javascript">
+	function show_type() {
+		$("input.btn-dot").toggleClass("d-none");
+		$(".hide-shipment").toggleClass("d-block");
+	}
+</script> -->

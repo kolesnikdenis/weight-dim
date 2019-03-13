@@ -1,23 +1,30 @@
-    var port = require("serialport");
-    const Readline = port.parsers.Readline;
-    var port1 = new port("/dev/ttyUSB0", {
-      baudrate: 1200, autoOpen: false 
-    });
-port1.open(function (err) {
-  if (err) {
-    return console.log('Error opening port: ', err.message);
-  }
- 
-  // Because there's no callback to write, write errors will be emitted on the port:
-  port1.write('main screen turn on');
-});
-const Hoek = require('hoek');
+var ejs =  require('ejs');
+//let template = ejs.compile(str, options);
+var fs = require('fs');
 
-// The open event is always emitted
-port1.on('open', function() {
-  // open logic
-console.log("opeeeeen");
-	port1.on('data', function(data) {
-        console.log('data received: ' + data);
-      });
+var request = require('request');
+
+var options = {
+	url: 'http://193.138.246.2:5000/',
+	    path: '/',
+	    method: 'GET',
+	    json:true,
+	timeout:500
+}
+request(options, function(error, response, body){
+	    if(error) console.log(error);
+	    if (response && response.statusCode && response.statusCode =='200' ) {  
+		    console.log(body);
+		    console.log(JSON.parse(JSON.stringify(response.body)).scan);
+	    }
 });
+
+
+
+/*
+request('http://193.138.246.2:5000/', function (error, response, body) {
+	  console.log('error:', error); // Print the error if one occurred
+	  console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+	  console.log('body:', body); // Print the HTML for the Google homepage.
+});
+*/

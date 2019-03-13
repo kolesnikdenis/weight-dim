@@ -1,44 +1,37 @@
 <% include ../partials/scripts %>
-<%- dst_point %>
+<header class="head-points head-points_main">
+	<div class="container">
+    	<div class="row">
+    		<div class="col-12">
+				<div class="text-center">
+					<h1>Выберите действие</h1>
+				</div> 
+			</div>
+    	</div>
+    </div>
+</header>    	
 
-<div class="row">
-        <div class="col-md-3"><!-- .col-md-3--></div>
-        <div class="col-md-6">
-		<div style="width:100%"  class="btn-group-vertical btn-group-lg">
-		<!--
-		<button type="button" class="btn btn-default" onclick="Ohran1(1)">точка 1</button>
-		<button type="button" class="btn btn-default" onclick="Ohran1(2)">точка 2</button>
-		<button type="button" class="btn btn-default" onclick="Ohran1(3)">точка 3</button>
-		<button type="button" class="btn btn-default" onclick="Ohran1(4)">точка 4</button>
-		-->
+<section>
+	<div class="container">
+	    <div class="row">		
+	        <div class="col-12 offset-md-2 col-md-8">
+			<button type="button" class="btn btn-choose header_text" id=shipment onclick="select('arrival')">
+				<span>01</span>
+		    </button>
 		</div>
+	        <div class="col-12 offset-md-2 col-md-8">
+			<!-- <div style="width:100%"  class="btn-group-vertical btn-group-lg"> -->
+			<button type="button" class="btn btn-choose" id=arrival onclick="select('shipment')">
+				<span>02</span>Отгрузка
+		    </button>
+		</div>
+	    </div>
 	</div>
-        <div class="col-md-3"><!-- .col-md-3--></div>
-      </div>
+</section>	
 
 <script type="text/javascript">
- function Ohran1(id) { location.href = '/type_select?dot_dst='+id }
-
- var points=(<%- points %>);
- for (var k in points.points_sale) {
-    if (points.points_sale.hasOwnProperty(k)) {
-       var disable_class="";
-       if (<%- dst_point %> > 0) {
-         if (k == <%- dst_point %>) {
-             disable_class="btn btn-default ";
-         }else {
-             disable_class="btn btn-default disabled";
-         }
-       } else {
-            disable_class="btn btn-default";
-       }
-       var r=$('<input/>').attr({
-                             type: "button",
-                             class: disable_class,
-                             onclick: "Ohran1("+k+")",
-                             value: points.points_sale[k]
-                         });
-        $("div.btn-group-lg").append(r);
-    }
- }
+   function select(type) {   	    
+   		location.href = '/sel_products?type='+type
+   }
 </script>
+

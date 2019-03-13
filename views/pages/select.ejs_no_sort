@@ -1,0 +1,304 @@
+<% include ../partials/scripts %>
+<!--
+<%- obj_shipment %> <br>
+<%- ps %> <br>
+<%- name %> <br>
+<%- id_dst %> <br>
+<%- goods_chicken %>
+<%- store_price %>
+<br> -->
+
+<header class="head-points">
+  <div class="container">
+    <div class="row">
+      <div class="col-2">
+        <a href="/type_select?dot_dst=<%- id_dst %>" class="back back-link">
+          <img src="../../public/img/back.svg" alt="назад">
+        </a>
+      </div>
+      <div class="col-8 col-sm-6 col-md-7">
+        <h1><%- name %></h1>
+      </div>
+      <div class="col-1 col-sm-4 col-md-3">
+        <a href="#invoice" class="invoice-link">
+          <img src="../../public/img/approve-invoice.svg" alt="накладная">
+          <span class="invoice-link_text">Накладная</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</header> 
+
+<section>
+<div class="container">
+  <div class="row">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a href="/" class="block_link">Главная</a>
+          </li>
+          <li class="breadcrumb-item">
+            <!-- <a href="/sel_products?type=<%- type_operation %>" class="header_text"></a> -->
+            <a href="#" class="header_text block_link"></a>  <!-- onclick="saveInvoice()" -->
+          </li>          
+          <li class="breadcrumb-item" aria-current="page">
+            <!-- <a href="/sel_products?type=<%- type_operation %>"><%- name %></a>  -->
+            <a href="/type_select?dot_dst=<%- id_dst %>"><%- name %></a>           
+          </li>
+          <li class="breadcrumb-item active">
+            Категория
+          </li>
+        </ol>
+      </nav>
+  </div>
+
+  <!-- <div class="box-select">
+      <div class="row">
+        <div class="col-12">
+          <p>Введите количество ящиков:</p>
+        </div>
+        <div class="col-12 offset-md-1 col-md-10 offset-lg-2 col-lg-8">
+          <label for="box-quantity" class="">1.8кг</label>
+          <input type="number" id="box-quantity" placeholder="0" min="1" required> <br>
+          <label for="box-quantity" class="">1.3кг</label>   
+          <input type="number" id="box-quantity" placeholder="0" min="1" required>    
+        </div>
+      </div>
+    </div> -->  
+
+<!--  <select class="1electpicker">
+ <option>Mustard</option>
+ <option>Ketchup</option>
+ <option>Barbecue</option>
+</select> -->
+
+<script>
+  $(document).ready(function () {
+    var mySelect = $('#first-disabled2');
+
+    $('#special').on('click', function () {
+      mySelect.find('option:selected').prop('disabled', true);
+      mySelect.selectpicker('refresh');
+    });
+
+    $('#special2').on('click', function () {
+      mySelect.find('option:disabled').prop('disabled', false);
+      mySelect.selectpicker('refresh');
+    });
+
+    $('#basic2').selectpicker({
+      liveSearch: true,
+      maxOptions: 1
+    });
+  });
+</script>
+
+<script>
+
+$('.1electpicker').selectpicker();
+
+</script> 
+  <div class="col-xs-12 offset-md-1 col-md-10 offset-lg-2 col-lg-8">
+        
+        <div class="btn-group-vertical btn-group-lg btn-lg goods-item">
+    
+          <!-- <span class="badge">выбор кол-во ящиков</span>
+          <select id=boxing class="selectpicker" data-width="100%"  data-icon="glyphicon-remove" id=coluntbox title="выбери" data-style="btn-danger">
+          
+            <optgroup label="кол-во ящиков">
+              <option data-subtext="ящик" data-icon="glyphicon-shopping-cart">1</option>
+                <option data-subtext="ящика" data-icon="glyphicon-shopping-cart">2</option>
+                <option data-subtext="ящика" data-icon="glyphicon-shopping-cart">3</option>
+                <option data-subtext="ящика" data-icon="glyphicon-shopping-cart">4</option>
+                <option data-subtext="ящиков" data-icon="glyphicon-shopping-cart">5</option>
+                <option data-subtext="ящиков" data-icon="glyphicon-shopping-cart">6</option>
+                <option data-subtext="ящиков" data-icon="glyphicon-shopping-cart">7</option>
+            </optgroup>
+          </select> -->
+        </div>
+    </div> 
+  </div>
+  
+</div>
+</section>
+<!-- <a class="btn btn-invoice btn-invoice_do" href="/create_invoice" role='button' > create invoice </a> -->
+<section class="invoice">
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+    <div id="invoice" >
+      <h5>Накладная</h5>
+
+        <a href="#" onclick="del_order();" class="btn btn-invoice btn-invoice_del" role="button"> 
+          <span class="glyphicon glyphicon-remove"></span>
+            Удалить
+          <span class="glyphicon glyphicon-remove"></span>
+        </a>
+        <a class="btn btn-invoice btn-invoice_do" href="/create_invoice" role='button'> 
+          <span class="glyphicon glyphicon-ok"></span> 
+            Сформировать 
+          <span class="glyphicon glyphicon-ok"></span>
+        </a>
+    </div>
+    
+  </div>
+  </div>
+</div>
+</section>
+
+<script type="text/javascript">
+ function Ohran1( id ) { location.href = '/ves?dot_dst=<%- id_dst %>&ps=<%- ps %>&id_production='+id }
+
+ function del_order() {
+   if (confirm("Вы подтверждаете удаление?")) {
+
+     $.ajax({
+         url: "/del_order",
+         type: "GET",
+         dataType: "json",
+         data: { tes: 123 },
+         contentType: "application/json",
+         cache: false,
+         timeout: 5000,
+         complete: function () {
+             //console.log('process complete');
+         },
+         success: function (data) {
+             console.log(data);
+             location.href = '/';
+         },
+         error: function () {
+             //console.log('process error');
+         }
+     });
+   }
+
+
+ }
+
+ //$('#boxing').selectpicker();
+/* $('select.selectpicker').on('change', function(){
+     var selected = $('.selectpicker option:selected').val();
+     $('.selectpicker').selectpicker('setStyle', 'btn-danger', 'remove');
+     $('.selectpicker').selectpicker('setStyle', 'btn-success', 'add');
+     $.ajax({
+         url: "/change_tare",
+         type: "GET",
+         dataType: "json",
+         data: {
+             tare: selected
+         },
+         contentType: "application/json",
+         cache: false,
+         timeout: 5000,
+         complete: function () {
+             //console.log('process complete');
+         },
+         success: function (data) {
+             //console.log(data);
+             addRow(data);
+             //console.log('process sucess');
+         },
+         error: function () {
+             //console.log('process error');
+         }
+     });
+ }); */
+ var obj_shipment = <%- obj_shipment %>;
+ var tare = obj_shipment.dst.tare;
+  if (typeof(tare)=="undefined") { tare=0; obj_shipment.dst[tare]=0; }
+
+ if (tare > 0){
+	console.log("tare:",tare);
+     /* 
+     $('.selectpicker').val(tare);
+     $('.selectpicker').selectpicker('refresh');
+     $('.selectpicker').selectpicker('setStyle', 'btn-danger', 'remove');
+     $('.selectpicker').selectpicker('setStyle', 'btn-success', 'add');
+*/
+ }
+
+ var goods=(<%- goods_chicken %>);
+ var price_goods ={};
+ //console.log(JSON.stringify(goods));
+ var rename_goods=(<%- rename_goods %>);
+ var filter_goods=(<%- filter_goods %>)
+ goods.product= fun_rename_goods(rename_goods,goods.product);
+ goods.product= fun_filter_goods(filter_goods,goods.product);
+
+
+
+if (obj_shipment.type == 'arrival') {
+     price_goods = {};
+ }else {
+    price_goods = (<%- store_price %>);
+}
+//console.log("goods", goods);
+//console.log("price_goods", price_goods);
+
+ var weight=obj_shipment.shipment.<%- ps %>;
+
+ //var count = 0;
+ //var go = JSON.parse(JSON.stringify(goods));
+ for (var k in goods.product) {
+    if (goods.product.hasOwnProperty(k)) {
+      var e="";
+      var ep="";
+      var class_btn="";
+      if ( price_goods[k] && price_goods[k].Price) {
+          price=price_goods[k].Price;
+      }else {
+          price=0;
+      }
+      if (weight && typeof(weight[k]) === "object"){
+          summ=0;
+          for (var t=0; t<weight[k].length; t++){
+              var st = weight[k][t];
+              summ=parseFloat(summ) + parseFloat(st);
+          }
+          e=summ.toFixed(3)+" кг";
+          class_btn="btn btn-success btn-dot";
+          ep=summ*price+"грн";
+      }
+      else {
+          e="0.0 кг";
+          ep="0.0 грн ";
+          class_btn="btn btn-default btn-dot";
+      }
+      var  ep_с=price+" грн\\кг ";
+      var r=$('<button/>').attr({
+        type: "button",
+        class: class_btn,
+        onclick: "Ohran1('"+k+"')"
+      });
+    var span_id_1c = $('<span/>').attr({
+        class: "btn-dot__id_1c"
+    }).html(k); 
+    text_button  = $('<span/>').attr({
+        class: "btn-dot__name"
+    }).html(goods.product[k]);
+ 
+    r.append(span_id_1c).append(text_button)
+  
+    var span=$('<span/>').attr({
+        class: "btn-dot__weight"    
+    }).html(e);
+    var span_price=$('<span/>').attr({
+        class: "btn-dot__price d-none"
+    }).html(ep);
+    var span_ppi=$('<span/>').attr({
+        class: "btn-dot__price_per_item d-none"     
+    }).html(ep_с);
+     
+    r.append(span)
+        if (Object.keys(price_goods).length>0) {
+            
+            r.append(span_price).append(span_ppi)
+            
+        }
+       // r.append(span_id_1c)
+    $("div.btn-group-lg").append(r);
+
+  }
+}
+</script>

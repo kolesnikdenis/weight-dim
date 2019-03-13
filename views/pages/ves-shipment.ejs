@@ -1,0 +1,411 @@
+<% include ../partials/scripts %>
+<!--
+<%- id_dst %>
+<%- id_production %>
+<%- production %>
+<%- name %>
+<%- p_name %>
+<%- arr_weight %>
+<%- arr_packages %>
+-->
+<header class="head-points">
+	<div class="container">
+    	<div class="row">
+    		<div class="col-2">
+				<a href="/select?dot_dst=<%- id_dst %>&production=<%- production %>" class="back back-link back-link_ves">
+					<img src="../../public/img/back.svg" alt="назад">
+				</a>
+			</div>
+    		<!-- <div class="col-8"> -->
+            <div class="col-8 col-sm-6 col-md-8">
+				<h1>
+					<%- name %>  <br>
+					<span class = "label label-default"><%- p_name %></span>
+				</h1>
+			</div>
+            <!-- start -->
+            <div class="col-1 col-sm-4 col-md-1">
+                <a href="#" class="reconnect-link">
+                    <img src="../../public/img/barcode.svg" alt="переподключится">
+                    <span class="invoice-link_text"></span>
+                </a>
+            </div>
+            <!-- end -->
+    	</div>
+    </div>
+</header> 
+<section class="weight">
+<div class="container">
+	<div class="row">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a href="#" class="block_link">Главная</a>
+          </li>
+          <li class="breadcrumb-item">
+          	<a href="#" class="header_text block_link"></a>
+          </li>
+          <li class="breadcrumb-item" aria-current="page">
+            <a href="/type_select?dot_dst=<%- id_dst %>"><%- name %></a>           
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">Категория</li>
+        </ol>
+      </nav>
+  </div>
+	<div class="row">
+    <div class="col-12 offset-md-1 col-md-10">
+        <p>Вес</p>
+        <form class="bs-example bs-example-form ves-form" role="form">
+          <div class="input-group input-group-lg">
+            <input id=output0 type="text" class="form-control" placeholder="0.0 кг">
+          </div>
+        </form>
+        <a href="#" class="input-group-addon btn get_weight">
+          Фиксировать
+        </a>
+    </div>
+
+    <!-- <div class="col-12 col-sm-6">    
+          <p>Сканирование</p>
+      <form class="">
+        <input type="text" class="form-control" placeholder="<%- p_name %>">
+      </form>
+      <a href="#" class="input-group-addon btn">
+        Сканировать
+      </a>
+         </div> -->
+
+    
+    <!-- <div class="col-12">
+      <a href="#" class="input-group-addon btn get_weight">
+        Фиксировать
+      </a>
+    </div> -->
+  </div>
+	<div class="row">
+	    <div class="offset-md-1 col-md-10">
+	        <table class="table table-hover table-weight">
+	            <thead>
+	                 <tr>
+	                   <th>Номер</th>
+	                   <th>Вес</th>
+	                   <th>Управление</th>
+	                 </tr>
+	            </thead>
+	            <tbody id=myTable></tbody>
+	            <tfoot>
+	            	<tr>
+	            		<td class="total-weight">Итого:</td>
+	            		<td>
+	            			<span class="label label-default label-weight" id="summ_weight"></span>
+	            		</td>
+	            		<td class="cell-weight_fix">
+	            			<a href="/select?dot_dst=<%- id_dst %>&production=<%- production %>" class="btn btn-weight_fix">Закрепить</a>
+	            		</td>
+	            	</tr>
+	            </tfoot>
+	        </table>
+		</div>
+	</div>
+</div>
+</section>
+
+<script type="text/javascript">
+
+    var ctx = new AudioContext();
+    var osc = ctx.createOscillator();
+    osc.frequency.value = 80;
+    osc.start();
+
+    function randomIntFromInterval(min,max) // min and max included
+    {
+        return Math.floor(Math.random()*(max-min+1)+min);
+    }
+
+    function beep(){
+        osc.connect(ctx.destination);
+        var tonetimeout= setInterval(
+            ()=>{
+            osc.frequency.value=+randomIntFromInterval(700,1000);
+    },70);
+        var t=setTimeout(function(t){
+            clearInterval(tonetimeout);
+            osc.disconnect(ctx.destination);
+        },500);
+        console.log("time out",t);
+        console.log("setInterval:",tonetimeout);
+        console.log("stop beep id:",tonetimeout, "handed:",t);
+    }
+
+/*$('.reconnect-link').click(function(e) {
+    $.ajax({
+        url: "http://192.168.0.112:5000/reboot",
+        type: "GET",
+        dataType: "json",
+        contentType: "application/json",cache: false,timeout: 5000,
+        complete: function (aa) {
+            console.log(aa);
+            if (aa.status==200)
+            alert("перзагрузки успешна");
+
+        },
+        success: function (data) {
+            //$("#output0").val(data+" кг.");
+            //send_to_server_obj();
+            //console.log(data);
+        },
+        error: function () {
+            alert("ошибка перзагрузки");
+        }
+    });
+});*/
+
+function get_arr_ves(){
+    $.ajax({
+        url: "/get_weight_arr",
+        type: "GET",
+        cache: false,
+        timeout: 5000,
+        complete: function() {
+            //console.log('process complete');
+        },
+        success: function(data) {
+            data = JSON.parse(data);
+	    //console.log(data);
+            //console.log('process sucess');
+ 	    for (var i=0; i<=data.length; i++) {
+		if (i<data.length) { 
+		  ((ii)=>(setTimeout(()=>{ $("#output0").attr("placeholder", data[ii]+" kg.")  },1000*ii)))(i)
+		} else  {
+		   ((ii)=>(setTimeout(()=>{console.log(data[ii]); get_arr_ves(); },500*ii)))(i)
+		}
+	     }
+        },
+        error: function() {
+            console.log("какая то ошибка")
+        },
+    });
+
+}
+setInterval(()=>{get_scan1();},500);
+
+function send_scan_result(data_in){
+	console.log(data_in);
+	$.ajax({
+         url: "/ves_add",
+         type: "GET",
+         dataType: "json",
+         data: data_in,
+         contentType: "application/json",
+         cache: false,
+         timeout: 5000,
+         complete: function(t) {
+//			console.log(t);
+         },
+         success: function(data) {
+            $("select").prop('selectedIndex', 0);
+            addRow(data);
+            beep();
+             /*
+             var audio = new Audio('/public/media/beep-07.mp3');
+             console.log(audio);
+             audio.play();
+             */
+            //console.log("addRow scan!",data);
+        },
+	error: function() {
+		console.log('process error');
+	}
+       });
+
+}
+//setInterval(()=>{get_scan();},500);
+
+function get_scan(){
+ $.ajax({
+	url: 'http://194.6.232.106:5000/',
+	type: 'GET',
+	dataType:'json',
+	contentType: "application/json", cache: false,timeout:1000,
+	complete: function(aa){
+		//console.log("complite",aa);
+	//},
+	//success: function(aa){
+		//console.log(aa, "success");
+		if (aa.status ==200){
+		if ( aa.responseJSON && aa.responseJSON.scan ) {
+			console.log(aa.responseJSON);
+			console.log(aa.responseJSON.scan, aa.responseJSON.scan.length);
+				
+			if (aa.responseJSON.scan.length>0){
+				in_ves=aa.responseJSON.scan;
+				ves=in_ves.substr(-5,4)/1000;
+				if ( +ves>0 ){
+				 code = aa.responseJSON.scan.substr(1,6);
+                 send_ves=1;
+
+				 var send_data= {
+					id_production: "<%- id_production %>",
+					production: "<%- production %>",
+					ves: ves,
+					tare: 0,
+					type_tare:"ФР-00000605"
+				 };
+				 console.log("send:",send_data);
+				 if ( send_ves==1 ) {
+					send_scan_result(send_data);
+				 }else { 
+					alert("сканируемый товар и выбранный товар не сходятся");
+				 }
+				} else {
+					alert ("нет корректных данных о весе");
+				}
+		
+            }
+		}
+		}
+	},
+	error:	function(){
+	}
+	});
+}
+
+get_arr_ves();
+ $('.get_weight').click(function(e) {
+  $.ajax({
+	url: "/get_weight",
+         type: "GET",
+         dataType: "json",
+	 contentType: "application/json",cache: false,timeout: 5000,
+	complete: function (aa) {
+		//console.log(aa);
+		if (typeof +aa.responseText == "number" && +aa.responseText>0  ) {
+			$("#output0").val(aa.responseText+" кг");
+			send_to_server_obj();
+			$('#output0').val("");
+		} else  alert("нестабильные показания");
+
+	},
+	success: function (data) {
+		//$("#output0").val(data+" кг.");
+		//send_to_server_obj();
+		//console.log(data);
+	},
+	error: function () {
+	}
+	});
+ });
+
+ function Ohran1( ) { location.href = '/ves' }
+ function del_weight(index,ves_arr,tare_arr,type_tare_arr) {
+  if (confirm("Вы действительно хотите удалить?") == true){
+    ves_arr=JSON.parse(ves_arr);
+     ves_arr.splice(index, 1);
+    tare_arr = JSON.parse(tare_arr);
+     tare_arr.splice(index,1);
+    type_tare_arr = type_tare_arr.split(",");
+     type_tare_arr.splice(index,1);
+     $.ajax({
+         url: "/weight_change",
+         type: "GET",
+         dataType: "json",
+         data: {
+             id_production: "<%- id_production %>",
+             production: "<%- production %>",
+             weight_array: ves_arr,
+	     tare_array: tare_arr,
+	     type_tare_array: type_tare_arr
+	     
+         },
+         contentType: "application/json",
+         cache: false,
+         timeout: 5000,
+         complete: function () {
+             //console.log('process complete');
+         },
+         success: function (data) {
+		$("select").prop('selectedIndex', 0);
+		addRow(data );
+         },
+         error: function () {
+             //console.log('process error');
+         }
+     });
+  } else {
+    return false;
+  }   
+ }
+
+ function send_to_server_obj(){
+  var tare=$("#select-quantity").val();
+  var id_tare=$("#select-boxes").val();
+  console.log("tare: ",+tare , " id_tRE:",id_tare, " if: ",$("#select-boxes").find(":selected").index() );
+
+  var digits_only1 = $("#output0").val().split(' ')[0];
+	  $.ajax({
+                url: "/ves_add",
+                type: "GET",
+                dataType: "json",
+                data: {
+                    id_production: "<%- id_production %>",
+                    production: "<%- production %>",
+                    ves: digits_only1,
+					tare: 0,
+		    		type_tare:"ФР-00000605"
+		
+                },
+                contentType: "application/json",
+                cache: false,
+                timeout: 5000,
+                complete: function(t) {
+//			console.log(t);
+                },
+                success: function(data) {
+			$("select").prop('selectedIndex', 0);
+				addRow(data);
+				/*
+                    var audio = new Audio('/public/media/beep-26.mp3');
+                    audio.play();
+                */
+				beep();
+			console.log("addRow",data);
+               },
+                error: function() {
+                  console.log('process error');
+                },
+              });
+}
+
+ function addRow(data){
+  $("#myTable").empty();
+  var summ="0.0";
+	console.log(data);
+  if (data.arr_ves.length >0 ) {
+	var summ=data.arr_ves.map(function (t) {return +t}).reduce(add, 0);
+
+	function add(a, b) {
+	    return a + b;
+	}
+      console.log("summ:",summ);
+      data.arr_ves.map(function (a, i) {
+          data.arr_ves[i] = +a;
+      });
+	console.log(data);
+      for (var i = data.arr_ves.length-1; i >=0; i--) {
+        $('#myTable').append('<tr><td>' + parseInt(i + 1) + '</td><td>' + (data.arr_ves[i]) + '</td><td><a href=# onclick="del_weight(\'' + i + '\',\'[' + data.arr_ves + ']\',\'['+data.arr_tare+']\',\''+data.arr_type_tare+'\')">X</a></td></tr>');
+      }
+  }
+	if ( +summ ) {
+	 summ_show=summ.toFixed(3)+ " ";
+	} else { summ_show=0; }
+	$('#summ_weight')[0].innerText=summ_show;;
+
+
+ }
+ $('#commit_and_continue').click(function(e) {
+	send_to_server_obj();
+
+ });
+ addRow({arr_ves:<%- arr_weight %>, arr_tare:<%- arr_tare %>, arr_type_tare:<%- arr_type_tare %>});
+</script>
+

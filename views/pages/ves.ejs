@@ -6,63 +6,195 @@
 <%- name %>
 <%- p_name %>
 <%- arr_weight %>
+<%- arr_packages %>
 -->
-
-<center><h1>"<%- name %>"  <span class = "label label-default"><%- p_name %></span></h1></center>
-
-<center>
-<div class="row">
-        <div class="col-md-3"><!-- .col-md-3 --></div>
-        <div class="col-md-6">
-
-
-	</div>
-        <div class="col-md-3"><!-- .col-md-3--></div>
-      </div>
-
-<div class="row">
-        <div class="col-md-3"><!-- .col-md-3 --></div>
-        <div class="col-md-6">
-
-<form class="bs-example bs-example-form" role="form">
-     <div class="input-group input-group-lg">
-      <span class="input-group-addon">вес <span class="label label-default">крыло</span></span>
-      <input id=output0 type="text" class="form-control" placeholder="0.0 кг.">
-      <a href="#" class="input-group-addon btn btn-success get_weight">фиксировать</a>
+<header class="head-points">
+	<div class="container">
+    	<div class="row">
+    		<div class="col-2">
+				<a href="/select?dot_dst=<%- id_dst %>&production=<%- production %>" class="back back-link back-link_ves">
+					<img src="../../public/img/back.svg" alt="назад">
+				</a>
+			</div>
+    		<div class="col-8">
+				<h1>
+					<%- name %>  <br>
+					<span class = "label label-default"><%- p_name %></span>
+				</h1>
+			</div>
+			<div class="col-1 col-sm-4 col-md-1">
+                <a href="#" class="reconnect-link">
+                    <img src="../../public/img/barcode.svg" alt="переподключится">
+                    <span class="invoice-link_text"></span>
+                </a>
+            </div>
+    	</div>
     </div>
-  </form>
- </div>
-        <div class="col-md-3"><!-- .col-md-3--></div>
-      </div>
+</header> 
+<section class="weight">
+<div class="container">
+	<div class="row">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item">
+            <a href="#" class="block_link">Главная</a>
+          </li>
+          <li class="breadcrumb-item">
+          	<a href="#" class="header_text block_link"></a>
+          </li>
+          <li class="breadcrumb-item" aria-current="page">
+            <a href="/type_select?dot_dst=<%- id_dst %>"><%- name %></a>           
+          </li>
+          <li class="breadcrumb-item active" aria-current="page">Категория</li>
+        </ol>
+      </nav>
+  </div>
+	<div class="row">
+    <div class="col-12 offset-md-1 col-md-4 col-lg-5">
+        <p>Вес</p>
+		<form class="bs-example bs-example-form ves-form" role="form">
+	 		<div class="input-group input-group-lg">
+				<!-- <span class="input-group-addon">
+	        Вес 
+	        <span class="label label-default"></span> 
+				</span>-->
+				<input id=output0 type="text" class="form-control" placeholder="0.0 кг">
+			</div>
+		</form>
+ 	</div>
+    <div class="col-12 col-md-6 col-lg-5">
+      <p>Тара</p>
+     <!-- <form action="#" id="select-box">
+        <select name="select-box-1_8" class="select-box select_red" id="select-1_8">
+          <option value="1,8" class="box-weight">1,8</option>
+        </select>
+        <select name="select-box-1_26" class="select-box select_blue" id="select-1_26">
+          <option value="1,26">1,26</option>
+        </select>
+        <select name="select-box-0_85" class="select-box select_green" id="select-0_85">
+          <option value="0,85">0,85</option>
+        </select>
+      </form>  -->
+      <form action="#" class="tare-select">
+        <select name="select-boxes" id="select-boxes" class="select-box"></select>
+        <select name="select-quantity" id="select-quantity" class="select-box"></select>
 
+          <script>
 
-<div class="row">
-        <div class="col-md-3"><!-- .col-md-3--></div>
-        <div class="col-md-6">
-            <center>
+              var arr_packages=<%- arr_packages %>;
+              arr_packages["0"] ={
+                  "ItemDescription":"тара не выбрана",
+                  "UnitOfMeasure":"шт",
+                  "Quantity":"0"
+              }
+              Object.keys(arr_packages).forEach(function (e) {
+                  var descr= arr_packages[e].ItemDescription;
+                  if (descr)
+                  $('#select-boxes') .append($("<option></option>")
+                      .attr("value",e)
+                      .text(arr_packages[e].ItemDescription));
+              });
+
+            for(let i=0; i<11; i++){
+              let option = document.createElement('option');
+              option.value = i;
+              option.innerText =i;
+              document.getElementById('select-quantity').appendChild(option);
+            }
+          </script>
+
+      </form>
+    </div>
+    
+    <div class="col-12 offset-md-1 col-md-10">
+      <a href="#" class="input-group-addon btn get_weight">
+        <!-- <img src="../../public/img/tick.png" alt="фиксировать"> -->
+        Фиксировать
+      </a>
+    </div>
+  </div>
+	<div class="row">
+	    <div class="offset-md-1 col-md-10">
                 <!-- <a href="#" id="commit_and_continue" style="width:100%" class="btn btn-info" role="button" ><span class="glyphicon glyphicon-plus"></span> фиксировать вес и продолжить взвешивание</a><br> -->
                 <!-- <a href="#" style="width:100%" class="btn btn-success" role="button"><span class="glyphicon glyphicon-ok"></span> фиксировать вес и закрыть</a><br> -->
-                <a href="/select?dot_dst=<%- id_dst %>&production=<%- production %>" style="width:100%" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-remove"></span> Закрыть </a>
-                                 <table  class="table table-hover">
-                                   <thead>
-                                     <tr>
-                                       <th>Номер</th>
-                                       <th>Вес</th>
-                                       <th>управление</th>
-                                     </tr>
-                                   </thead>
-                                   <tbody id=myTable>
-
-                                   </tbody>
-                                 </table>
-            </center>
+	        <table class="table table-hover table-weight">
+	            <thead>
+	                 <tr>
+	                   <th>Номер</th>
+	                   <th>Вес</th>
+                     <th>Тара</th>
+	                   <th>Управление</th>
+	                 </tr>
+	            </thead>
+	            <tbody id=myTable></tbody>
+	            <tfoot>
+	            	<tr>
+	            		<td class="total-weight">Итого:</td>
+	            		<td>
+	            			<span class="label label-default label-weight" id="summ_weight"></span>
+	            		</td>
+                  <td>
+                    <span class="label-box">0</span>
+                  </td>
+	            		<td class="cell-weight_fix">
+	            			<a href="/select?dot_dst=<%- id_dst %>&production=<%- production %>" class="btn btn-weight_fix">Закрепить</a>
+	            		</td>
+	            	</tr>
+	            </tfoot>
+	        </table>
+		</div>
+	</div>
+	<!-- <div class="row">
+		<div class="ml-auto">
+			<div class="input-group input-group-lg">
+	      		<span class="input-group-addon">
+	  				Общий вес: 
+	  				<span class="label label-default label-weight" id="summ_weight"></span>
+	  				<span class="label label-default label-weight">кг</span>
+	  			</span>
+			</div>
+		</div>
+	</div> 
+	<div class="row">
+		<div class="ml-auto">
+			<a href="/select?dot_dst=<%- id_dst %>&production=<%- production %>" class="btn btn-weight_fix">Фиксировать</a>
+		</div>
+	</div> -->
 </div>
-        <div class="col-md-3"><!-- .col-md-3 --></div>
-      </div>
-
-
+</section>
 
 <script type="text/javascript">
+
+
+function get_arr_ves(){
+    $.ajax({
+        url: "/get_weight_arr",
+        type: "GET",
+        cache: false,
+        timeout: 5000,
+        complete: function() {
+            //console.log('process complete');
+        },
+        success: function(data) {
+            data = JSON.parse(data);
+	    console.log(data);
+            //console.log('process sucess');
+ 	    for (var i=0; i<=data.length; i++) {
+		if (i<data.length) { 
+		  ((ii)=>(setTimeout(()=>{ $("#output0").attr("placeholder", data[ii]+" кг")  },1000*ii)))(i)
+		} else  {
+		   ((ii)=>(setTimeout(()=>{console.log(data[ii]); get_arr_ves(); },500*ii)))(i)
+		}
+	     }
+        },
+        error: function() {
+            console.log("какая то ошибка")
+        },
+    });
+
+}
+
+get_arr_ves();
  $('.get_weight').click(function(e) {
   $.ajax({
 	url: "/get_weight",
@@ -70,10 +202,12 @@
          dataType: "json",
 	 contentType: "application/json",cache: false,timeout: 5000,
 	complete: function (aa) {
+		console.log(aa);
 		if (typeof +aa.responseText == "number" && +aa.responseText>0  ) {
-			$("#output0").val(aa.responseText+" кг.");
+			$("#output0").val(aa.responseText+" кг");
 			send_to_server_obj();
-		} else  alert("не стабильные показания "); 
+			$('#output0').val("");
+		} else  alert("нестабильные показания");
 
 	},
 	success: function (data) {
@@ -86,9 +220,17 @@
 	});
  });
 
+setInterval(()=>{get_scan1();},500);
+
  function Ohran1( ) { location.href = '/ves' }
- function del_weight(index,ves_arr) {
+ function del_weight(index,ves_arr,tare_arr,type_tare_arr) {
+  if (confirm("Вы действительно хотите удалить?") == true){
+    ves_arr=JSON.parse(ves_arr);
      ves_arr.splice(index, 1);
+    tare_arr = JSON.parse(tare_arr);
+     tare_arr.splice(index,1);
+    type_tare_arr = type_tare_arr.split(",");
+     type_tare_arr.splice(index,1);
      $.ajax({
          url: "/weight_change",
          type: "GET",
@@ -96,7 +238,10 @@
          data: {
              id_production: "<%- id_production %>",
              production: "<%- production %>",
-             weight_array: ves_arr
+             weight_array: ves_arr,
+	     tare_array: tare_arr,
+	     type_tare_array: type_tare_arr
+	     
          },
          contentType: "application/json",
          cache: false,
@@ -105,56 +250,99 @@
              //console.log('process complete');
          },
          success: function (data) {
-             //console.log(data);
-             addRow(data);
-             //console.log('process sucess');
+		$("select").prop('selectedIndex', 0);
+		addRow(data );
          },
          error: function () {
              //console.log('process error');
          }
      });
+  } else {
+    return false;
+  }   
  }
 
  function send_to_server_obj(){
-  var digits_only1 = $("#output0").val().split(' ')[0];
-  $.ajax({
+  //var t= $('select');
+  var tare=$("#select-quantity").val();
+  var id_tare=$("#select-boxes").val();
+  console.log("tare: ",+tare , " id_tRE:",id_tare, " if: ",$("#select-boxes").find(":selected").index() );
+  if (+tare>0 && $("#select-boxes").find(":selected").index() >0 ) {
+
+		var digits_only1 = $("#output0").val().split(' ')[0];
+            console.log("id_tare:",id_tare," tare:",tare);
+            if ( id_tare == "ФР-00000605" ) { w_tare = 1.26; };
+			if ( id_tare == "ФР-00000606" ) { w_tare = 1.8; };
+			if ( id_tare == "ФР-00000607" ) { w_tare =0.85; };
+            if ( id_tare == "ФР-00000608" ) { w_tare =0; };
+            if ( id_tare == "ФР-00000788" ) { w_tare =0; };
+
+			console.log("do:",digits_only1, w_tare, tare);
+			digits_only1 = digits_only1 - (tare * w_tare ).toFixed(3);
+			console.log("posle",digits_only1,w_tare);
+
+	  $.ajax({
                 url: "/ves_add",
                 type: "GET",
                 dataType: "json",
                 data: {
                     id_production: "<%- id_production %>",
                     production: "<%- production %>",
-                    ves: digits_only1
+                    ves: digits_only1,
+		    tare: tare,
+		    type_tare:id_tare
+		
                 },
                 contentType: "application/json",
                 cache: false,
                 timeout: 5000,
-                complete: function() {
-                  //console.log('process complete');
+                complete: function(t) {
+			console.log(t);
                 },
                 success: function(data) {
-                  //console.log(data);
-                  addRow(data);
-                  //console.log('process sucess');
+			console.log("success");
+			$("select").prop('selectedIndex', 0);
+				addRow(data);
                },
                 error: function() {
-                  //console.log('process error');
+                  console.log('process error');
                 },
               });
+    }
 
-	}
- function addRow(ves_arr){
+
+}
+
+ function addRow(data){
   $("#myTable").empty();
-  console.log(ves_arr);
-  ves_arr.map(function(a,i){ ves_arr[i]=+a; });
-  for (var i=0; i < ves_arr.length; i++){
-	$('#myTable').append('<tr><td>'+parseInt(i+1)+'</td><td>'+(ves_arr[i])+'</td><td><a href=# onclick="del_weight(\''+i+'\',['+ves_arr+'])">X</a></td></tr>');
+  var summ="0.0";
+	console.log(data);
+  if (data.arr_ves.length >0 ) {
+	var summ=data.arr_ves.map(function (t) {return +t}).reduce(add, 0);
 
+	function add(a, b) {
+	    return a + b;
+	}
+      console.log("summ:",summ);
+      data.arr_ves.map(function (a, i) {
+          data.arr_ves[i] = +a;
+      });
+	console.log(data);
+      for (var i = data.arr_ves.length-1; i >=0; i--) {
+        $('#myTable').append('<tr><td>' + parseInt(i + 1) + '</td><td>' + (data.arr_ves[i]) + '</td><td>'+data.arr_tare[i]+'('+data.arr_type_tare[i]+')</td><td><a href=# onclick="del_weight(\'' + i + '\',\'[' + data.arr_ves + ']\',\'['+data.arr_tare+']\',\''+data.arr_type_tare+'\')">X</a></td></tr>');
+      }
   }
+	if ( +summ ) {
+	 summ_show=summ.toFixed(3)+ " ";
+	} else { summ_show=0; }
+	$('#summ_weight')[0].innerText=summ_show;;
+
+
  }
  $('#commit_and_continue').click(function(e) {
 	send_to_server_obj();
- });
 
- addRow(<%- arr_weight %>);
+ });
+ addRow({arr_ves:<%- arr_weight %>, arr_tare:<%- arr_tare %>, arr_type_tare:<%- arr_type_tare %>});
 </script>
+

@@ -10,8 +10,16 @@
   "author": "kolesnikdenis <i@kolesnikdenis.com>",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.16.2",
+    "bootstrap-select": "^1.13.3",
+    "ejs": "^2.6.1",
+    "excel4node": "^1.6.0",
     "express": "^4.15.3",
+    "express-session": "^1.15.6",
+    "html-pdf": "^2.2.0",
+    "lodash": "^4.17.11",
     "node-markdown": "^0.1.1",
+    "request": "^2.88.0",
     "socket.io": "^2.0.4"
   },
   "devDependencies": {}

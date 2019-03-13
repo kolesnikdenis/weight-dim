@@ -1,0 +1,139 @@
+<% include ../partials/scripts %>
+
+<header class="head-points">
+  <div class="container">
+    <div class="row">
+        <div class="col-2">
+          <a href="/" class="back">
+            <img src="../../public/img/back.svg" alt="назад">
+          </a>
+        </div>
+        <div class="col-8">
+          <h1> Настройки </h1>
+        </div>
+    </div>
+  </div>
+</header>
+<section>
+  <div class="container">
+  <div class="row">    
+    <div class="col-12">
+      <div class="input-group input-group-lg mb-3">
+        <div class="input-group-prepend" id="button-addon4">
+          <button type="button"  class="btn btn-settings" onclick="del()"> 
+             <i class="fas fa-trash"></i> 
+          </button> 
+          <button type="button"  class="btn btn-settings btn-settings_plus" onclick="show_add_form()"> 
+             <i class="fas fa-plus"></i>
+          </button> 
+        </div>
+        <select class="form-control form-control_weight" id="url_weight" onchange=change();></select>
+      </div>
+
+      <div id="control_nasty"></div>
+    </div>
+  </div>
+</div>
+</section>
+<footer class="footer-setting">
+  <div class="container">
+    <div class="row">
+      <div class="col-12 col-sm-4 col-md-3 col-lg-2 ml-auto">
+        <button type="button"  class="btn btn-save" onclick="save_config()">Сохранить</button>
+      </div>  
+    </div>
+  </div>
+</footer>
+
+
+<script>
+function change(){ 
+	arr_weight = tr(arr_weight,$('#url_weight').val());
+	$("#url_weight").empty();
+	load_url();
+}
+
+function show_add_form(){
+        var div_group=$('<div />', { "class": 'input-group mb-3' } );
+        div_group.append($('<span />', { "class": 'input-group-text', "id":'basic-addon1', "text":'url:'}));
+	$('#control_nasty').append(div_group);
+	var input_in=$('<input />', { "id":'input_add_url',"class":'form-control', "type":'text', "placeholder":'http://.....', "aria-label": 'http://.....', "aria-describedby": 'basic-addon1', keyup: function(e){
+e.preventDefault();
+  	if (e.keyCode === 13) {
+		add_to_arr();
+ 	} 
+        }});
+	var button_add = $('<button />', {"class":'btn btn-settings_plus', click: function(e){ e.preventDefault(); add_to_arr();}, "text":'Добавить  путь к весам'});
+	$('#basic-addon1').append(input_in);
+	$('#basic-addon1').append(button_add);
+}
+var arr_weight=<%- arr_weight %>
+var arr_old_weight=<%- arr_weight %>
+
+function load_url(){ 
+ for (var k in arr_weight) {
+    $('#url_weight').append( $('<option value="'+k+'">'+k+': '+arr_weight[k]+'</option>') );
+  }
+}
+ 
+load_url();
+
+function del(){
+	arr_weight.splice(0,1);
+        $("#url_weight").empty();
+	load_url();
+
+}
+function tr(arr,index){
+ var out_arr=[];
+ out_arr[0]=arr[index];
+ if ( index == arr.length) { console.log("max"); }
+ for (var j = 0; j <arr.length; j++){
+    if (j<index){
+       out_arr[(j+1)] = arr[j]; 
+   }else { if (arr[(j+1)])  out_arr[(j+1)] =arr[(j+1)]; }
+  }
+ return out_arr;
+}
+function add_to_arr(){
+ 	$("#url_weight").empty();
+	arr_weight =add(arr_weight,$('#input_add_url').val());
+        load_url();
+        $('#control_nasty').empty();
+}
+function add(in_arr,add_string){
+	in_arr[in_arr.length]=add_string;
+	var out_arr=tr(in_arr,in_arr.length-1);
+	return(out_arr);
+}
+
+function save_config(){
+	if (JSON.stringify(arr_weight) !== JSON.stringify(arr_old_weight)){ 
+
+		console.log(arr_old_weight,arr_weight) 
+  	    $.ajax({
+                url: "/save_config",
+                type: "GET",
+                dataType: "json",
+                data: { new_config_weight: arr_weight},
+                //contentType: "application/json",
+        	contentType: "application/json; charset=utf-8",
+                cache: false,
+                timeout: 5000,
+                complete: function() {
+                  console.log('process complete');
+                },
+                success: function(data) {
+                  console.log(data);
+                  console.log('process sucess');
+               },
+                error: function(e) {
+                  console.log('process error',e);
+                },
+              });
+
+	}
+	
+}
+</script>
+
