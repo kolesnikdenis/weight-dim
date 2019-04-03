@@ -20,13 +20,13 @@
         <h1><%- name %></h1>
       </div>
       <div class="col-1 col-sm-4 col-md-3">
-        <a href="#invoice" class="invoice-link">
+        <a href="javascript:window.scrollTo(0,document.body.scrollHeight);" class="invoice-link">
           <img src="../../public/img/approve-invoice.svg" alt="накладная">
           <span class="invoice-link_text">Накладная</span>
         </a>
       </div>
       <div class="col-1 col-sm-1">
-            <a href="#" class="reconnect-link">
+            <a href="javascript:return" class="reconnect-link">
                 <img src="../../public/img/barcode.svg" alt="переподключится">
                 <span class="invoice-link_text"></span>
             </a>
@@ -108,20 +108,7 @@ $('.1electpicker').selectpicker();
   <div class="col-xs-12 offset-md-1 col-md-10 offset-lg-2 col-lg-8">
         
         <div class="btn-group-vertical btn-group-lg btn-lg goods-item">
-    
-          <!-- <span class="badge">выбор кол-во ящиков</span>
-          <select id=boxing class="selectpicker" data-width="100%"  data-icon="glyphicon-remove" id=coluntbox title="выбери" data-style="btn-danger">
-          
-            <optgroup label="кол-во ящиков">
-              <option data-subtext="ящик" data-icon="glyphicon-shopping-cart">1</option>
-                <option data-subtext="ящика" data-icon="glyphicon-shopping-cart">2</option>
-                <option data-subtext="ящика" data-icon="glyphicon-shopping-cart">3</option>
-                <option data-subtext="ящика" data-icon="glyphicon-shopping-cart">4</option>
-                <option data-subtext="ящиков" data-icon="glyphicon-shopping-cart">5</option>
-                <option data-subtext="ящиков" data-icon="glyphicon-shopping-cart">6</option>
-                <option data-subtext="ящиков" data-icon="glyphicon-shopping-cart">7</option>
-            </optgroup>
-          </select> -->
+
         </div>
     </div> 
   </div>
@@ -180,7 +167,7 @@ $('.1electpicker').selectpicker();
             Удалить
           <span class="glyphicon glyphicon-remove"></span>
         </a>
-        <a class="btn btn-invoice btn-invoice_do" href="/create_invoice" role='button'> 
+        <a class="btn btn-invoice btn-invoice_do" href="/create_invoice?production=<%- ps %>" role='button'> 
           <span class="glyphicon glyphicon-ok"></span> 
             Сформировать 
           <span class="glyphicon glyphicon-ok"></span>
@@ -194,7 +181,7 @@ $('.1electpicker').selectpicker();
 
 <script type="text/javascript">
 
-setInterval(()=>{get_scan1();},500);
+setInterval(()=>{get_scan1(3);},500);
 
  function Ohran1( id ) { location.href = '/ves?dot_dst=<%- id_dst %>&ps=<%- ps %>&id_production='+id }
 
@@ -287,80 +274,96 @@ $('select').on('change', function (e) {
 });
 
 var obj_shipment = <%- obj_shipment %>;
-Object.keys(obj_shipment.package).map(
-	function (tt) { c=obj_shipment.package[tt].Quantity;
-	$('#'+tt+' option:eq('+c+')').prop('selected', true);
-	}
-);
+var price_goods = {};
+var weight = obj_shipment.shipment.<%- ps %>;
 
- var tare = obj_shipment.dst.tare;
-  if (typeof(tare)=="undefined") { tare=0; obj_shipment.dst[tare]=0; }
+function load_data() {
+    console.log("load data")
+    Object.keys(obj_shipment.package).map(
+        function (tt) {
+            c = obj_shipment.package[tt].Quantity;
+            $('#' + tt + ' option:eq(' + c + ')').prop('selected', true);
+        }
+    );
 
- if (tare > 0){
-	//console.log("tare:",tare);
-     /* 
-     $('.selectpicker').val(tare);
-     $('.selectpicker').selectpicker('refresh');
-     $('.selectpicker').selectpicker('setStyle', 'btn-danger', 'remove');
-     $('.selectpicker').selectpicker('setStyle', 'btn-success', 'add');
-*/
- }
+    var tare = obj_shipment.dst.tare;
+    if (typeof (tare) == "undefined") {
+        tare = 0;
+        obj_shipment.dst[tare] = 0;
+    }
 
- var goods=(<%- goods_chicken %>);
- //console.log("goods:", goods);
- var price_goods ={};
- //console.log(JSON.stringify(goods));
- var rename_goods=(<%- rename_goods %>);
- var filter_goods=(<%- filter_goods %>)
- //goods.product= fun_rename_goods(rename_goods,goods.product);
- ///goods.product= fun_filter_goods(filter_goods,goods.product);
 
-if (obj_shipment.type == 'arrival') {
-     price_goods = {};
- }else {
-    price_goods = (<%- store_price %>);
+
+    var goods = (<%- goods_chicken %>);
+    var rename_goods = (<%- rename_goods %>);
+    var filter_goods = (<%- filter_goods %>);
+
+    if (obj_shipment.type == 'arrival') {
+        price_goods = {};
+    } else {
+        price_goods = (<%- store_price %>);
+    }
+    var sort =<%- sort %>;
+    var new_sort = {}
+    Object.keys(sort).sort().forEach(function (key) {
+        new_sort[key] = sort[key];
+    });
+    Object.values(new_sort).forEach(function (value) {
+        Object.values(goods.product).forEach(function (arr_k, index) {
+            if (arr_k == value) {
+                var new_key = Object.keys(goods.product)[index];
+                var obj_to_button = {};
+                obj_to_button[new_key] = value;
+                add_button(fun_rename_goods(rename_goods, obj_to_button));
+                delete goods.product[new_key];
+            } else {
+                //console.log("arr_k,", arr_k, "value:", value);
+            }
+        })
+    });
+
+    for (var t in goods.product) {
+        var obj_to_button = {};
+        obj_to_button[t] = goods.product[t];
+        add_button(fun_rename_goods(rename_goods, obj_to_button));
+    };
+
 }
 
- var weight=obj_shipment.shipment.<%- ps %>;
-
-var sort=<%- sort %>;
-var new_sort={}
-Object.keys(sort).sort().forEach(function(key) {
- new_sort[key] = sort[key];
-});
-console.log("do: ", JSON.parse(JSON.stringify(goods)));
-console.log("new sort:" ,new_sort);
-Object.values(new_sort).forEach(function(value) {
-  Object.values(goods.product).forEach(function(arr_k,index ) { 
-  //console.log("arr_k", arr_k, " value: ", value);
-  if ( arr_k == value ) {
-	
- var new_key=Object.keys(goods.product)[index];
- var obj_to_button={};
- //console.log("index:", index);
- obj_to_button[new_key]=value;
- //console.log(obj_to_button);
- add_button(fun_rename_goods(rename_goods,obj_to_button));
- //add_button(obj_to_button);
- delete goods.product[new_key];
-    }else {
-	//console.log("arr_k,", arr_k, "value:", value);
-	}
-  })
-});
-//console.log("test:",goods);
-//arr_new = arr_new.concat(arr);
-for (var t in goods.product) {
- //console.log(t);
- var obj_to_button={};
- obj_to_button[t]=goods.product[t];
- //add_button(obj_to_button);
- add_button(fun_rename_goods(rename_goods,obj_to_button));
-};
-
-
- //add_button(goods.product);
-
+function reload_data(){
+    $.ajax({
+        url: "/reload_data",
+        type: "GET",
+        dataType: "json",
+        contentType: "application/json",cache: false,timeout: 5000,
+        complete: function (aa) {
+            if (aa.status==200) {
+                obj = JSON.parse(aa.responseText);
+                console.log(obj)
+                obj_shipment = obj;
+                weight = obj_shipment.shipment.<%- ps %>;
+                console.log(weight);
+                var find=$('span');
+                Object.keys(weight).map(function (vv,ii){
+                    console.log(vv,ii)
+                    var summ=0;
+                    for (var t=0; t<weight[vv].length; t++){
+                        var st = weight[vv][t];
+                        summ=parseFloat(summ) + parseFloat(st);
+                    }
+                    var e=summ.toFixed(3)+" кг";
+                    find.each((a,v)=> {if ($(find[a]).text()==vv) { $(find[(a+2)]).text(e); console.log(v)} })
+                })
+                //
+            }
+        },
+        success: function (data) {
+        },
+        error: function () {
+            console.log("ошибка перзагрузки");
+        }
+    });
+}
  function add_button(goods_product){
   for (var k in goods_product) {
     if (goods_product.hasOwnProperty(k)) {
@@ -413,15 +416,14 @@ for (var t in goods.product) {
     }).html(ep_с);
      
     r.append(span)
-        if (Object.keys(price_goods).length>0) {
-            
+    if (Object.keys(price_goods).length>0) {
             r.append(span_price).append(span_ppi)
-            
-        }
+    }
        // r.append(span_id_1c)
     $("div.btn-group-lg").append(r);
 
    }
   }
 }
+load_data();
 </script>

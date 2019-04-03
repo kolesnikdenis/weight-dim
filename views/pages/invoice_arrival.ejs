@@ -4,6 +4,7 @@
 json: <%- json %>
 price: <%- price %>
 print: <%- print %>
+
 -->
 <style>
 #lline{
@@ -26,10 +27,23 @@ print: <%- print %>
             <img src="../../public/img/back.svg" astore_pricelt="назад">
           </a>
         </div>
-        <div class="col-8">
+        <div class="col-3 col-md-5">
           <h1>Накладная</h1>
         </div>
+        <div class="col-7 col-md-5">
+            <a href="javascript:del_order('0')" class="btn btn-invoice_del">
+                Удалить
+            </a>
+            <a href="javascript:add_to_invoice()" class="btn btn-invoice_do">Дополнить</a>
+        </div>
+       
     </div>
+    <!-- <div class="row">
+        <div class="col-12">
+            <a href="javascript:del_order('0')" class="btn btn-invoice_del">Удалить</a>
+            <a href="javascript:add_to_invoice()" class="btn btn-invoice_do">Дополнить</a>
+        </div>
+    </div> -->
   </div>
 </header> 
 
@@ -95,7 +109,9 @@ print: <%- print %>
 
 var obj=(<%- json  %>);
 var goods_chicken=(<%- goods_chicken %>);
-
+$( document ).ready(function() {
+	$('.back').attr("href", "/select?dot_dst="+obj.dst.id+"&production=<%- old_url_production %>&type="+obj.dst.type_operation+"&destination_type="+obj.dst.destination_type);
+})
 
 var summ_tare = {};
 console.log(obj['package']);
@@ -125,14 +141,16 @@ Object.keys(obj['package']).map(function (type_product) {
 	}
     })
 
-console.log(summ_tare);
+
 for (test in summ_tare ){
-    tare_line=$('<div/>', {
-        id: 'somee-id'});
-    p = $('<p/>').text(summ_tare[test].ItemDescription +"  - " +summ_tare[test].Quantity);
-    tare_line.append(p);
-    $('#tare').append(tare_line);
-    console.log($('#tare'));
+    if ( summ_tare[test].Quantity) {
+        tare_line = $('<div/>', {
+            id: 'somee-id'
+        });
+        p = $('<p/>').text(summ_tare[test].ItemDescription + "  - " + summ_tare[test].Quantity);
+        tare_line.append(p);
+        $('#tare').append(tare_line);
+    }
 }
 var store_price=<%- (!!locals.price)?price:'{}' %>;
 var full_summ=0;
@@ -147,6 +165,34 @@ if ( obj.type == "shipment") {
     $("#to_contragen_store").text("Основной склад");
 }
 
+function del_order() {
+    if (confirm("Вы подтверждаете удаление?")) {
+
+        $.ajax({
+            url: "/del_order",
+            type: "GET",
+            dataType: "json",
+            data: { tes: 123 },
+            contentType: "application/json",
+            cache: false,
+            timeout: 5000,
+            complete: function () {
+                console.log('process complete');
+
+                //location.href="/";
+            },
+            success: function (data) {
+                console.log(data);
+                location.href = '/';
+            },
+            error: function () {
+                //console.log('process error');
+            }
+        });
+    }
+
+
+}
 function add(in_obj) {
    var num_product=0;
    var p = Object.keys(in_obj);
@@ -179,8 +225,10 @@ function add(in_obj) {
 
             full_summ += price*summ;
             summ=summ.toFixed(3);
-	    num_product++;
-	    $('#table-invoice__info').append("<tr><td>"+num_product+"</td><td>"+goods_chicken[category_product].product[k]+"</td><td>"+summ+" кг</td><td></td><td>"+price.toFixed(3)+"</td><td>"+(price*summ).toFixed(3)+"</td></tr>");
+            if ( summ > 0) {
+                num_product++;
+                $('#table-invoice__info').append("<tr><td>" + num_product + "</td><td>" + goods_chicken[category_product].product[k] + "</td><td>" + summ + " кг</td><td></td><td>" + price.toFixed(3) + "</td><td>" + (price * summ).toFixed(3) + "</td></tr>");
+            }
 
 	}
     }
@@ -217,44 +265,47 @@ function save_and_del_tmp(print){
     });
 
 }
-/*
-(function() {
-    var beforePrint = function() {
-        console.log('Functionality to run before printing.');
-    };
 
-    var afterPrint = function() {
-        console.log('Functionality to run after printing');
-
-        setTimeout(function () { window.location.href = "/"; }, 100);
-    };
-
-    if (window.matchMedia) {
-        var mediaQueryList = window.matchMedia('print');
-        mediaQueryList.addListener(function(mql) {
-            if (mql.matches) {
-                beforePrint();
-            } else {
-                afterPrint();
+function save_and_next(print){
+    $.ajax({
+        url: "/session",
+        type: "GET",
+        cache: false,
+        timeout: 5000,
+        complete: function() {
+            console.log('process complete');
+        },
+        success: function(data) {
+            console.log(data);
+            if (print=='1'){
+                setTimeout(function () { window.print(); }, 500);
+                window.onfocus = function () { setTimeout(function () { window.location.href = "/"; }, 500); }
+            }else {
+                alert("Накладная сохранена, теперь она в отложенных аклодных ее возможно продолжить позже");
+                window.location.href="/";
             }
-        });
-    }
+        },
+        error: function() {
+            console.log("какая то ошибка")
+            console.log('process error');
+        },
+    });
 
-    window.onbeforeprint = beforePrint;
-    window.onafterprint = afterPrint;
+}
 
-}());
-*/
-
+function add_to_invoice(){
+    window.location.href="/type_select?dot_dst="+obj.dst.id
+}
 </script>
 
     <div class="container">
         <div class="row">
-            <div class=noprint>
+            <div class="noprint">
                 <a href="javascript:save_and_del_tmp('1')" class="btn btn-prints">
                     <img src="../../public/img/printer.svg" alt="печать">
-                </a>  
-                <a href="javascript:save_and_del_tmp('0')" class="btn btn-weight_fix">Сохранить</a> 
+                </a>
+                
+                <a href="javascript:save_and_next('0')" class="btn btn-weight_fix">Отложить</a>
             </div>
         </div>
     </div>

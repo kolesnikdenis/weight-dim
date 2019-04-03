@@ -25,7 +25,7 @@
 			</div>
             <!-- start -->
             <div class="col-1 col-sm-4 col-md-1">
-                <a href="#" class="reconnect-link">
+                <a href="javascript:return" class="reconnect-link">
                     <img src="../../public/img/barcode.svg" alt="переподключится">
                     <span class="invoice-link_text"></span>
                 </a>
@@ -60,7 +60,7 @@
             <input id=output0 type="text" class="form-control" placeholder="0.0 кг">
           </div>
         </form>
-        <a href="#" class="input-group-addon btn get_weight">
+        <a href="javascript:return" class="input-group-addon btn get_weight">
           Фиксировать
         </a>
     </div>
@@ -112,7 +112,7 @@
 
 <script type="text/javascript">
 
-    var ctx = new AudioContext();
+    /*var ctx = new AudioContext();
     var osc = ctx.createOscillator();
     osc.frequency.value = 80;
     osc.start();
@@ -136,7 +136,7 @@
         console.log("setInterval:",tonetimeout);
         console.log("stop beep id:",tonetimeout, "handed:",t);
     }
-
+*/
 /*$('.reconnect-link').click(function(e) {
     $.ajax({
         url: "http://192.168.0.112:5000/reboot",
@@ -161,17 +161,17 @@
 });*/
 
 function get_arr_ves(){
+    //console.log("get_arr_ves");
     $.ajax({
         url: "/get_weight_arr",
         type: "GET",
         cache: false,
         timeout: 5000,
-        complete: function() {
-            //console.log('process complete');
+        complete: function(d) {
+            //console.log('process complete',d);
         },
         success: function(data) {
             data = JSON.parse(data);
-	    //console.log(data);
             //console.log('process sucess');
  	    for (var i=0; i<=data.length; i++) {
 		if (i<data.length) { 
@@ -181,13 +181,21 @@ function get_arr_ves(){
 		}
 	     }
         },
-        error: function() {
-            console.log("какая то ошибка")
+        error: function(e) {
+            console.log("какая то ошибка",e)
         },
     });
 
 }
-setInterval(()=>{get_scan1();},500);
+setInterval(()=>{get_scan1(2);},500);
+
+
+    function reload_date_ves(in_obj){
+          if ( in_obj && in_obj.arr_ves &&    in_obj.arr_tare && in_obj.arr_type_tare) {
+            $('#myTable').empty();
+            addRow(in_obj);
+        }
+    }
 
 function send_scan_result(data_in){
 	console.log(data_in);
@@ -278,7 +286,7 @@ get_arr_ves();
          dataType: "json",
 	 contentType: "application/json",cache: false,timeout: 5000,
 	complete: function (aa) {
-		//console.log(aa);
+		console.log("aa:",aa);
 		if (typeof +aa.responseText == "number" && +aa.responseText>0  ) {
 			$("#output0").val(aa.responseText+" кг");
 			send_to_server_obj();
@@ -305,6 +313,7 @@ get_arr_ves();
      tare_arr.splice(index,1);
     type_tare_arr = type_tare_arr.split(",");
      type_tare_arr.splice(index,1);
+
      $.ajax({
          url: "/weight_change",
          type: "GET",
@@ -326,6 +335,7 @@ get_arr_ves();
          success: function (data) {
 		$("select").prop('selectedIndex', 0);
 		addRow(data );
+        //     reload_date_ves(data);
          },
          error: function () {
              //console.log('process error');
@@ -392,7 +402,7 @@ get_arr_ves();
       });
 	console.log(data);
       for (var i = data.arr_ves.length-1; i >=0; i--) {
-        $('#myTable').append('<tr><td>' + parseInt(i + 1) + '</td><td>' + (data.arr_ves[i]) + '</td><td><a href=# onclick="del_weight(\'' + i + '\',\'[' + data.arr_ves + ']\',\'['+data.arr_tare+']\',\''+data.arr_type_tare+'\')">X</a></td></tr>');
+        $('#myTable').append('<tr><td>' + parseInt(i + 1) + '</td><td>' + (data.arr_ves[i]) + '</td><td><a href="" onclick="del_weight(\'' + i + '\',\'[' + data.arr_ves + ']\',\'['+data.arr_tare+']\',\''+data.arr_type_tare+'\')">X</a></td></tr>');
       }
   }
 	if ( +summ ) {

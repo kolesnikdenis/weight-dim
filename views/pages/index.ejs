@@ -1,10 +1,16 @@
 <% include ../partials/scripts %>
+<!-- 
+<%- dst_point %> 
+-->
 <header class="head-points head-points_main">
 	<div class="container">
     	<div class="row">
     		<div class="col-12">
-				<div class="text-center">
-					<h1>Выберите действие</h1>
+				<div class="invoice-type d-flex">     <!-- text-center -->
+				
+					<a href="/deferred">Отложенные накладные</a>
+					<a href="/report">Сформированные накладные</a>
+					<div id=open_invoice></div>
 				</div> 
 			</div>
     	</div>
@@ -13,12 +19,15 @@
 
 <section>
 	<div class="container">
-	    <div class="row">		
+	    <div class="row">	
+			<div class="col-12 offset-md-2 col-md-8">
+				<p>Выберите действие:</p>
+			</div>
 	        <div class="col-12 offset-md-2 col-md-8">
 			<button type="button" class="btn btn-choose header_text" id=shipment onclick="select('arrival')">
 				<span>01</span>
 		    </button>
-		</div>
+			</div>
 	        <div class="col-12 offset-md-2 col-md-8">
 			<!-- <div style="width:100%"  class="btn-group-vertical btn-group-lg"> -->
 			<button type="button" class="btn btn-choose" id=arrival onclick="select('shipment')">
@@ -30,6 +39,14 @@
 </section>	
 
 <script type="text/javascript">
+
+var dst_point=(<%- dst_point %>)
+console.log(dst_point);
+ if ( +dst_point>1) {
+  var url= $('<a />', { id: "id1",name: "name",href:"/create_invoice", text:"Открыта накладная"} ) ;
+        console.log(url);
+        $("#open_invoice").append(url);
+}
    function select(type) {   	    
    		location.href = '/sel_products?type='+type
    }

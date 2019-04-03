@@ -43,39 +43,124 @@ var fun_filter_goods  = (in_array_filter,in_obj)=>{
 }
 
 
+/*
+$('.portfolio_filter').each(function(){
+    var $this_filter = $(this);
+    $this_filter.on('click', 'a', function(){
+        var project_type = $(this).data('optionValue').slice(1);
+        var url = window.location.href;
+        if (url.indexOf('?') >= 0) {
+            url = url.slice(0, window.location.href.indexOf('?'));
+        }
+        if (project_type) {
+            url = url + '?type=' + project_type;
+        }
+        console.log('url: ' + url);
+        window.history.replaceState(null, document.title, url);
+        return false;
+    });
+});
+*/
+
+var ctx;
+var osc;
+window.onload = function() {
+ //console.log("reload:",event.currentTarget.performance.navigation.type);
+ var AudioContext = window.AudioContext || window.webkitAudioContext;
+ ctx = new AudioContext();
+ //console.info(localStorage.getItem('reload'),'reload');
+ if ( event.currentTarget.performance.navigation.type == 1  ) {
+	if ( localStorage.getItem('reload') == "0" ) {
+		//localStorage.setItem('reload',1);
+		location.reload();
+		localStorage.setItem('reload',1);
+		//console.log("reload");
+	}else {  localStorage.setItem('reload',0) };
+}
+else { localStorage.setItem('reload',0) };
+  osc = ctx.createOscillator();
+  osc.frequency.value = 1100
+  osc.start();
+//Play(20,3100);
+//console.log(window);
+}
+
+
+Play = (function() {
+ // var AudioContext = window.AudioContext || window.webkitAudioContext;
+//var ctx = new AudioContext();
+
+  //var ctx = new(AudioContext || webkitAudioContext);
+  console.log("ctx",ctx); 
+  return function(duration, freq, finishedCallback) {
+    duration = +duration;
+    if (typeof finishedCallback != "function") {
+      finishedCallback = function() {};
+    }
+    var osc = ctx.createOscillator();
+    osc.type = 10;
+    osc.connect(ctx.destination);
+    osc.frequency.value = freq;
+    
+    if (osc.start) osc.start();
+    else osc.noteOn(0);
+    
+    setTimeout(
+      function() {
+        if (osc.stop) osc.stop(0);
+        else osc.noteOff(0);
+        finishedCallback();
+      }, duration
+    );
+  };
+})();
+/*function beep(){
+	console.log("test");
+ Play(50, 1100); 
+}*/
+
+
 function beep(){
 	$('body').addClass('scanBody');
-	console.log($('body'));
+	console.log("beep");
+        
+	/*
+	console.log("create audio context",ctx,osc);
 	var ctx = new AudioContext();
 	var osc = ctx.createOscillator();
 	osc.frequency.value = 1100;
 	osc.start();
+	*/
 
 	function randomIntFromInterval(min,max) // min and max included
 	{
 		return Math.floor(Math.random()*(max-min+1)+min);
 	}
+	//console.log(ctx);
+	//ctx.resume().then(() => {
+	    
+	//    console.log('Playback resumed successfully',osc);
+	    osc.connect(ctx.destination);
+	    var t=setTimeout((t)=>{
+	        osc.disconnect(ctx.destination);
+        	//ctx.close();
+	        $('body').removeClass('scanBody');
+	    	},200);
+	//});
+//ctx.close();
 
-
-	osc.connect(ctx.destination);
     /*
-var tonetimeout= setInterval(
-        ()=>{
-        osc.frequency.value=+randomIntFromInterval(700,1000);
-	},30);
-*/
+    osc.connect(ctx.destination);
     var t=setTimeout(function(t){
-        //clearInterval(tonetimeout);
         osc.disconnect(ctx.destination);
+	ctx.close();
 	$('body').removeClass('scanBody');
     },200);
-    console.log("time out",t);
-    //console.log("setInterval:",tonetimeout);
-    console.log("stop beep id:",tonetimeout, "handed:",t);
+*/
 }
 
 
-var get_scan1 = ()=>{
+var get_scan1 = (in_r)=>{
 	//console.log("background_scan");
 	$.ajax({
 		url: '/background_scan',
@@ -85,16 +170,24 @@ var get_scan1 = ()=>{
 		complete: function(aa){
 			//console.log(aa, "success");
 			if (aa.status==200 && aa.statusText=="OK"){
-				/*var audio = new Audio('/public/media/beep-26.mp3');
-				audio.play();
-				console.log("scan ok");*/
+				if (in_r==1){
+					location.reload();
+				}
+				if (in_r==2){  // get obj ves
+					//get_arr_ves();
+					reload_date_ves(aa.responseJSON);
+				}
+				if (in_r==3){
+					reload_data();
+				}
 				beep();
-			}//else { console.log(aa.statusText ) };
+			}
 		},
 		error:	function(){
 		}
 	});
 }
+
 
 
 //var fun_rename_goods_one = (filter,in_obj) => {
@@ -165,6 +258,21 @@ var  funFilter = (in_array_filter,in_obj)=>{
 
 <script>
   $( document ).ready(function() {
+// History API 
+//console.log("history:", JSON.stringify(window.history),window.history.previous.href);
+//req.get('host') + req.originalUrl
+if( window.history && window.history.pushState ){
+  history.pushState( "nohb", null, "" );
+  $(window).on( "popstate", function(event){
+    if( !event.originalEvent.state ){
+      history.pushState( "nohb", null, "" );
+      alert("только органами управления программы\nсмотрите подсказки в программе")
+      return;
+    }
+  });
+}
+//
+
     var t="<%= (!!locals.type_operation)?type_operation:'' %>";
     console.log(t);
     var header_text;
@@ -173,7 +281,7 @@ var  funFilter = (in_array_filter,in_obj)=>{
     else 
        header_text="Приход товара"
       $(".header_text").append(header_text);
-});
+ });
   
     /*function saveInvoice(){
       alert("Завершите формирование накладной");

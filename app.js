@@ -16,8 +16,9 @@ app.use('/public', express.static(process.cwd() + '/public'));
 app.set('view engine', 'ejs');
 app.use(session({
     secret: "sss",
-    resave: true,
-    saveUninitialized: true
+    //resave: true,
+    //saveUninitialized: true
+	 
 }));
 
 // ================================================================

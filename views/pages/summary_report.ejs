@@ -1,0 +1,134 @@
+<% include ../partials/scripts %>
+
+<header class="head-points">
+    <div class="container">
+        <div class="row">
+            <div class="col-2">
+                <a href="/" class="back">
+                    <img src="../../public/img/back.svg" alt="назад">
+                </a>
+            </div>
+            <div class="col-8">
+                <h1 class="">Отчеты за рабочий период</h1>
+            </div>
+        </div>
+    </div>
+</header>
+
+<section class="summary-report">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h4 class="title-table text-center">Приход</h4>
+                <table class="table summary-table_arrival">
+                    <thead>
+                    <th>№ п/п</th>
+                    <th>Дата / Время</th>
+                    <th>Наименование</th>
+                    <th>Кол-во</th>
+                    <th>Ед. изм.</th>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <h4 class="title-table text-center">Отгрузка</h4>
+                <table class="table summary-table_shipment">
+                    <thead>
+                    <th>№ п/п</th>
+                    <th>Дата / Время</th>
+                    <th>Наименование</th>
+                    <th>Кол-во</th>
+                    <th>Ед. изм.</th>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+
+    $( document ).ready(function() {
+        $.ajax({
+            url: "/list_transaction",
+            type: "GET",
+            dataType: "json",
+            data: {
+                list: 0,
+            },
+            contentType: "application/json", cache: false, timeout: 5000,
+            complete: function (aa) {
+                if (aa.status == 200) {
+                    obj = JSON.parse(aa.responseText);
+                    //console.log(obj)
+                    var date_array = {};
+
+                    function add_way(way) {
+                        if (obj[way]) {
+                            var count=0;
+                            Object.keys(obj[way]).map(function (val_date, key_date) {
+                                console.log("val_date", val_date)
+
+                                /*if (!date_array[val_date]) {
+                                    date_array[val_date] = {"way": way}
+                                }*/
+                                var in_data=(<%- data %>)
+                                if (in_data.data == val_date) { console.log("tt"); }
+                                if ( val_date == in_data.data)
+                                Object.keys(obj[way][val_date]).map(function (id_product, key_store) {
+                                    console.log(obj[way][val_date][id_product])
+                                    product = obj[way][val_date][id_product].descr;
+                                    sum = +obj[way][val_date][id_product].sum;
+                                    console.log(obj[way][val_date][id_product].sum);
+                                    var UnitOfMeasure =  obj[way][val_date][id_product].UnitOfMeasure;
+                                    var path="";
+                                    if (way == "arrival") { path = "приход"; }
+                                    else {  path = "расход"; }
+                                    count++;
+                                    sum = sum.toFixed(3);
+                                    $('.summary-table_'+way).append('<tr><td>'+count+'</td><td>' + val_date + '</td><td>' + product + '</td><td>' + sum + '</td><td>'+UnitOfMeasure+'.</td></tr>');
+                                })
+                            })
+                            //$('.title-table').append(path);
+                        }
+                    }
+
+                    add_way("arrival");
+                    add_way("shipment");
+                    /*
+                    Object.keys(date_array).map((v, k) = > {
+                        $('.invoice-table-summ-day').append('<tr><td><a href="/show_raport_day?data=' + v + '">' + v + '</a></td></tr>');
+                    })*/
+                }
+
+
+            },
+            success: function (data) {
+//$("#output0").val(data+" кг.");
+//send_to_server_obj();
+//console.log(data);
+            },
+            error: function () {
+                alert("ошибка перзагрузки");
+            }
+        });
+    })
+
+    function print1(){
+
+        window.print();
+        /*window.onfocus = function () { setTimeout(function () { alert("распечатано") }, 5100); }*/
+    }
+</script>
+
+<div class="container">
+    <div class="row">
+        <div class="noprint">
+            <a href="javascript:print1()" class="btn btn-prints">
+                <img src="../../public/img/printer.svg" alt="печать">
+            </a>
+        </div>
+    </div>
+</div>

@@ -53,7 +53,7 @@ h1{
 .scale img{
     width: 26px;
 }
- .title-info{
+.title-info{
     text-align: center;
     margin: 7px 0 25px;
     font-size: 20px;
@@ -129,6 +129,12 @@ h1{
 }
 
 /* ---------- index.ejs Точки реализации ------- */
+.invoice-type{
+    justify-content: space-between;
+}
+.invoice-type a{
+    color: #fff;
+}
 .btn-settings{
     color: #b4bfdc;
     background-color: #fff;
@@ -167,26 +173,6 @@ input.btn-dot{
     color: #eee;
     margin-right: 10px;
 }
-/* .text{
-    border-left: 2px solid #ccc;
-    padding-left: 15px;  
-}
-.text p{
-    margin: 0;
-}
-.text h4{
-    color: #984a59;
-    margin-top: 6px;
-}
-.text:after{
-    content: '>';
-    color: #ccc;
-    position: absolute;
-    top: 50%;
-    margin-top: -7px;
-    right: 3%;
-    font-size: 20px;
-} */
 .btn-add{
     width: 100%;
     background: #984a59;
@@ -242,6 +228,22 @@ ol.breadcrumb{
 	border: 1px solid #b4bfdc;
     border-bottom: none;
 }
+#id1{
+    color: #FC4F3F;
+    background-color: #ece9e9;
+    padding: 8px;
+    text-align: center;
+    border-radius: 5px;
+    width: 200px;
+    display: block;
+}
+/* #open_invoice{
+    background-color: #ece9e9;
+    padding: 8px;
+    text-align: center;
+    border-radius: 5px;
+    width: 200px;
+} */
 
 /* ------- select.ejs --------- */
 .goods-item{
@@ -536,11 +538,11 @@ span.input-group-addon{
     padding: 15px;
 }
 .select-box{
-    padding: 10px 0 10px 10px;  
+    padding: 15px 0 15px 10px;  
     background-color: #fff;
 } 
 .tare-item .select-box{
-    padding: 10px 15px;
+    padding: 15px 20px;
 }
 #select-boxes{
     width: 73%;
@@ -591,6 +593,7 @@ span.input-group-addon{
 }
 .input-group-lg>.form-control{
     border-radius: 0;
+    height: 58px;
 }
 .btn-weight_fix{
     color: #0D47A1;
@@ -668,8 +671,8 @@ span.input-group-addon{
     font-weight: bold;
     background-color: #0D47A1;
     position: fixed;
-    top: 4%;
-    right: 4%;
+    top: 2%;
+    right: 2%;
     border-radius: 50%;
     padding: 13px;
 }
@@ -678,6 +681,41 @@ span.input-group-addon{
 }
 .noprint{
     margin: 0 0 20px auto;
+}
+.noprint h1{
+    margin-top: 5px;
+}
+.noprint .btn-weight_fix{
+    position: fixed;
+    bottom: 5%;
+    right: 4%;
+    color: #fff;
+    background-color: #0D47A1;
+    border-radius: .25rem;
+}
+.noprint .btn-invoice_del{
+    border: 1px solid #f8f8f8;
+    width: 115px;
+}
+.noprint .btn-invoice_do{
+    margin-left: 17px;
+}
+
+/* ------- deferred.ejs --------- */
+.invoice-table{
+    width: 100%;
+}
+.invoice-table th{
+    text-align: center;
+}
+.deferred-report{
+    margin-top: 40px;
+}
+.title-table{
+    margin-bottom: 25px;
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
 
@@ -758,6 +796,9 @@ span.input-group-addon{
     #box-quantity{
     	width: 100%;
     	margin-left: 0;
+    }
+    .noprint .btn-invoice_do{
+        margin-bottom: 0;
     }
 }
 

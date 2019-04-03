@@ -9,16 +9,19 @@ storeprice:
 <header class="head-points">
   <div class="container">
     <div class="row">
-        <div class="col-2">
+        <div class="col-1">
           <a href="/sel_products?type=<%- type_operation %>" class="back">
             <img src="../../public/img/back.svg" astore_pricelt="назад">
           </a>
         </div>
-        <div class="col-8">
+        <div class="col-4 col-md-5">
           <h1> Выберите категорию </h1>
         </div>
-        <div class="col-1">
-          <a href="#" class="reconnect-link">
+        <div class="col-5">
+           <div id=open_invoice></div>
+        </div>
+        <div class="col-2 col-md-1">
+          <a href="javascript:return" class="reconnect-link">
               <img src="../../public/img/barcode.svg" alt="переподключится">
               <span class="invoice-link_text"></span>
           </a>
@@ -54,7 +57,15 @@ storeprice:
 </section>
 
 <script type="text/javascript">
+
         var weight = <%- shipment %>;
+ w=JSON.stringify(weight);
+console.log("len:",w.length,"w:",w);
+ if ( w.length>3) {
+  var url= $('<a />', { id: "id1",name: "name",href:"/create_invoice", text:"Открыта накладная"} ) ;
+        $("#open_invoice").append(url);
+}
+ 
         for (var k in weight) {
             if (weight.hasOwnProperty(k)) {
                 console.log(k);

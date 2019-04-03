@@ -22,8 +22,8 @@
 					<span class = "label label-default"><%- p_name %></span>
 				</h1>
 			</div>
-			<div class="col-1 col-sm-4 col-md-1">
-                <a href="#" class="reconnect-link">
+			<div class="col-1 col-md-1">
+                <a href="javascript:return" class="reconnect-link">
                     <img src="../../public/img/barcode.svg" alt="переподключится">
                     <span class="invoice-link_text"></span>
                 </a>
@@ -107,7 +107,7 @@
     </div>
     
     <div class="col-12 offset-md-1 col-md-10">
-      <a href="#" class="input-group-addon btn get_weight">
+      <a href="javascript:return" class="input-group-addon btn get_weight">
         <!-- <img src="../../public/img/tick.png" alt="фиксировать"> -->
         Фиксировать
       </a>
@@ -177,7 +177,7 @@ function get_arr_ves(){
         },
         success: function(data) {
             data = JSON.parse(data);
-	    console.log(data);
+	    //console.log(data);
             //console.log('process sucess');
  	    for (var i=0; i<=data.length; i++) {
 		if (i<data.length) { 
@@ -220,8 +220,14 @@ get_arr_ves();
 	});
  });
 
-setInterval(()=>{get_scan1();},500);
+setInterval(()=>{get_scan1(2);},500);
+function reload_date_ves(in_obj){
+    if ( in_obj && in_obj.arr_ves &&    in_obj.arr_tare && in_obj.arr_type_tare) {
+        $('#myTable').empty();
+        addRow(in_obj);
 
+    }
+}
  function Ohran1( ) { location.href = '/ves' }
  function del_weight(index,ves_arr,tare_arr,type_tare_arr) {
   if (confirm("Вы действительно хотите удалить?") == true){
@@ -297,7 +303,7 @@ setInterval(()=>{get_scan1();},500);
                 cache: false,
                 timeout: 5000,
                 complete: function(t) {
-			console.log(t);
+			//console.log(t);
                 },
                 success: function(data) {
 			console.log("success");
@@ -329,7 +335,7 @@ setInterval(()=>{get_scan1();},500);
       });
 	console.log(data);
       for (var i = data.arr_ves.length-1; i >=0; i--) {
-        $('#myTable').append('<tr><td>' + parseInt(i + 1) + '</td><td>' + (data.arr_ves[i]) + '</td><td>'+data.arr_tare[i]+'('+data.arr_type_tare[i]+')</td><td><a href=# onclick="del_weight(\'' + i + '\',\'[' + data.arr_ves + ']\',\'['+data.arr_tare+']\',\''+data.arr_type_tare+'\')">X</a></td></tr>');
+        $('#myTable').append('<tr><td>' + parseInt(i + 1) + '</td><td>' + (data.arr_ves[i]) + '</td><td>'+data.arr_tare[i]+'('+data.arr_type_tare[i]+')</td><td><a href="" onclick="del_weight(\'' + i + '\',\'[' + data.arr_ves + ']\',\'['+data.arr_tare+']\',\''+data.arr_type_tare+'\')">X</a></td></tr>');
       }
   }
 	if ( +summ ) {

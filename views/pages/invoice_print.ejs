@@ -246,8 +246,11 @@ function add(in_obj) {
 
             full_summ += price*summ;
             summ=summ.toFixed(3);
-	    num_product++;
-	    $('#table-invoice__info').append("<tr><td>"+num_product+"</td><td>"+goods_chicken[category_product].product[k]+"</td><td>"+summ+" кг</td><td>"+price.toFixed(3)+"</td><td>"+(price*summ).toFixed(3)+"</td></tr>");
+
+	    if (summ>0) {
+            $('#table-invoice__info').append("<tr><td>" + num_product + "</td><td>" + goods_chicken[category_product].product[k] + "</td><td>" + summ + " кг</td><td>" + price.toFixed(3) + "</td><td>" + (price * summ).toFixed(3) + "</td></tr>");
+            num_product++;
+        }
 
 	}
     }
@@ -319,6 +322,4 @@ function save_and_del_tmp(){
             </div>
         </div>
     </div>
-</body>
-</html>
-
+</body

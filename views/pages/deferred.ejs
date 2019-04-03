@@ -1,0 +1,124 @@
+<% include ../partials/scripts %>
+<!-- <% file -%> -->
+<header class="head-points">
+	<div class="container">
+		<div class="row">
+			<div class="col-2">
+				<a href="/" class="back">
+					<img src="../../public/img/back.svg" alt="назад">
+				</a>
+			</div>
+			<div class="col-7">
+				<h1 class="">Отложенные накладные</h1>
+				
+			</div>
+			<div class="col-3">
+				<div id=open_invoice></div>
+			</div>
+		</div>
+	</div>
+</header>
+
+<section class="deferred-report">
+	<div class="container">
+		<div class="row">
+			<div class="col-12">
+				<h4 class="title-table text-center"></h4>
+				<table class="table invoice-table">
+					<thead>
+						<th>№ п/п</th>
+						<th>От</th>
+						<th>Кому</th>
+						<th>Дата / время</th>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script>
+
+	function load_invoice(file){
+		if ( file ) {
+			$.ajax({
+				url: "/select_invoice",
+				type: "GET",
+				dataType: "json",
+				data: {
+					load_invoice_file: file,
+				},
+
+				contentType: "application/json",cache: false,timeout: 5000,
+				complete: function (aa) {
+
+					//console.log(aa);
+					if (aa.status==200) {
+						console.log(aa.responseText);
+						if (aa.responseText.length > 2) {
+							obj = JSON.parse(aa.responseText);
+							if (obj.error.length > 2) {
+								alert("есть какая-то ошибка:\n" + obj.error)
+							} else {
+								alert("накладная загружена");
+								//console.log(obj)
+								window.location = "/select?dot_dst="+obj.file.dst.id+"&production=chicken&type="+obj.file.dst.type_operation+"&destination_type="+obj.file.dst.destination_type;
+							}
+						}
+					}
+				},
+				success: function (data) {
+					//$("#output0").val(data+" кг.");
+					//send_to_server_obj();
+					//console.log(data);
+				},
+				error: function () {
+					alert("ошибка");
+				}
+			});
+		}
+	}
+$( document ).ready(function() {
+
+var file=<%- (!!locals.file)?file:'{}' %>;
+console.log(file.file.length);
+ if ( file.file.length>6) {
+  var url= $('<a />', { id: "id1",name: "name",href:"/create_invoice", text:"Открыта накладная"} ) ;
+        $("#open_invoice").append(url);
+}
+   function select(type) {
+                location.href = '/sel_products?type='+type
+   }
+
+ $.ajax({
+		url: "/list_deferred",
+		type: "GET",
+		dataType: "json",
+		contentType: "application/json",cache: false,timeout: 5000,
+		complete: function (aa) {
+		if (aa.status==200)
+			obj=JSON.parse(aa.responseText);
+			if ( obj.return_obj){
+				//console.log(Object.keys(obj.return_obj))
+				for ( var i=1; Object.keys(obj.return_obj).length>=i; i++ ){
+					//console.log(obj.return_obj[i],i);
+					if (obj.return_obj[i].type=="arrival"){ type="Приход";} else { type="Отгрузка";}
+
+					$('.invoice-table').append('<tr><td>'+i+'</td><td>'+obj.return_obj[i].from+'</td><td>'+obj.return_obj[i].to+'</td><td><a href="#" onclick="load_invoice(\''+obj.return_obj[i].file_path+'\'); return false;">'+obj.return_obj[i].datatime+'</a></td></tr>');
+				}
+				$('.title-table').append(type);
+			}
+		},
+		success: function (data) {
+			//$("#output0").val(data+" кг.");
+			//send_to_server_obj();
+			//console.log(data);
+		},
+		error: function () {
+			alert("ошибка перзагрузки");
+		}
+ });
+});
+</script>

@@ -31,6 +31,7 @@ var load_points_sale =()=>{
 }
 
 
+
 var load_store =()=>{
     var file_store_catalogue="./store_catalogue.json";
     if (fs.existsSync(file_store_catalogue)) {
@@ -150,38 +151,373 @@ module.exports = function(app) {
 	res.render('pages/setting', {arr_weight: JSON.stringify(arr_weight)} );
  });
 
+ app.get('/list_deferred', function (req,res){
+     var testFolder = config.tmp_json;
+     var promis_arr=[];
+     var count_file=0;
+    var return_obj={};
+     const read_file = (path_to_file) => { return new Promise((resolve, reject) => {
+         fs.readFile(path_to_file, function readFileCallback(err, data) {
+             if (err){ reject(err); }
+             else {
+                 resolve({"data": data, "file_name": path_to_file})
+                 count_file++;
+                 return_obj[count_file]={"file_path":path_to_file,from:"",to:"",datatime:"",type:""};
+		     if ( data.length>5) {
+                 var in_obj=JSON.parse(data);
+		     if ( in_obj && in_obj.dst.type_operation){
+                 if ( in_obj.dst.type_operation=="arrival"){
+                     return_obj[count_file].from=in_obj.dst.name;
+                     return_obj[count_file].to="основной склад";
+                 }else {
+                     return_obj[count_file].to=in_obj.dst.name;
+                     return_obj[count_file].from="основной склад";
+                 }
+                 return_obj[count_file].type=in_obj.dst.type_operation;
+                 return_obj[count_file].datatime=in_obj.dst.create_data_time;
+		     }
+		     } else {
+			return_obj[count_file].type="arrival";
+			return_obj[count_file].datatime="";
+			return_obj[count_file].to="error";
+			return_obj[count_file].from="error";
+		     }
 
+             }
+         })
+      })
+    }
+    fs.readdir(testFolder, (err, files) => {
+    files.forEach(file => {
+        promis_arr.push(read_file(testFolder + file).then(
+            res => {
+                read_file(testFolder + file, function readFileCallback(err, data) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        console.log("d:", data);
+                        result =>		{data};
+                    }
+                })
+            }
+         ))
+     })
+
+
+     Promise.all(promis_arr.map(p => p.catch(x => console.log(x)) )).then(
+         r => {
+         count_file++;
+     //res.render('pages/add_ves', { arr_ves: JSON.stringify({arr_ves: return_obj }),file:"1"} );
+
+
+     res.write(JSON.stringify({return_obj }));
+     res.end()
+ },
+     t =>{	console(t);}
+ );
+ })
+
+ })
+
+
+    app.get('/summary_report', function (req,res) {
+        var data=req.query.data;
+        console.log(data);
+        res.render('pages/summary_report', {
+            data: JSON.stringify({"data":data})
+        });
+    })
+
+    app.get('/show_invoice', function (req,res) {
+        console.log(req.query);
+        var date=req.query.datetime;
+        var way=req.query.way;
+        var id=req.query.id;
+
+        var file_json="./soap_send/full_obj.json";
+        if (fs.existsSync(file_json)) {
+            fs.readFile(file_json, function readFileCallback(err, data) {
+                if (err) {
+                    console.log(err);
+                    res.render('pages/error');
+                } else {
+                    var obj_shipment = JSON.parse(data);
+                    var show_invoice = obj_shipment[way][id][date];
+                    if  ( JSON.stringify(show_invoice).length>10 ) {
+                        res.render('pages/show_archive_invoice', {
+                            show_invoice: JSON.stringify(show_invoice),
+                            way: JSON.stringify({"path":way}),
+			    date:JSON.stringify({"date":date})
+                        });
+                    }
+                }
+            })
+        }
+
+
+    })
+    app.get('/list_transaction', function (req,res){
+        function interval(date1, date2) {
+            if (date1 > date2) { // swap
+                var result = interval(date2, date1);
+                result.years  = -result.years;
+                result.months = -result.months;
+                result.days   = -result.days;
+                result.hours  = -result.hours;
+                return result;
+            }
+            result = {
+                years:  date2.getYear()  - date1.getYear(),
+                months: date2.getMonth() - date1.getMonth(),
+                days:   date2.getDate()  - date1.getDate(),
+                hours:  date2.getHours() - date1.getHours()
+            };
+            if (result.hours < 0) {
+                result.days--;
+                result.hours += 24;
+            }
+            if (result.days < 0) {
+                result.months--;
+                var copy1 = new Date(date1.getTime());
+                copy1.setDate(32);
+                result.days = 32-date1.getDate()-copy1.getDate()+date2.getDate();
+            }
+            if (result.months < 0) {
+                result.years--;
+                result.months+=12;
+            }
+            return result;
+        }
+        var a = new Date(); // Current date now.
+        var b = new Date();
+        b.setDate(b.getDate() - 2);
+
+        var file_json="./soap_send/full_obj.json";
+        if (fs.existsSync(file_json)) {
+            fs.readFile(file_json, function readFileCallback(err, data) {
+                if (err) {
+                    console.log(err);
+                    res.render('pages/error' );
+                } else {
+                    var obj_shipment = JSON.parse(data);
+                    if ( req.query.list == 1 ) {
+                        function way_show(way, count, out) {
+                            Object.keys(obj_shipment[way]).map(function (value, key) {
+                                var count_tare = 0;
+                                var count_product = 0;
+
+                                Object.keys(obj_shipment[way][value]).map(function (date_m, key_m) {
+                                    b = new Date(date_m);
+
+                                    var result_interval = interval(b, a);
+                                    if (result_interval.years == 0 && result_interval.months == 0 && result_interval.days <= 2) {
+                                        var show = 0;
+
+                                        Object.keys(obj_shipment[way][value][date_m]).map(function (type_prod_value, type_prod_key) {
+                                            if (type_prod_value != "package") {
+                                                Object.keys(obj_shipment[way][value][date_m][type_prod_value]).map(function (prod_value, prod_key) {
+                                                    if (show == 0) {
+                                                        show = 1;
+                                                        if (!out[way][date_m]) {
+                                                            out[way][date_m] = {}
+                                                        }
+                                                        if (!out[way][date_m][value]) {
+                                                            out[way][date_m][value] = {}
+                                                        }
+                                                        out[way][date_m][value] = {
+                                                            "datatime": date_m,
+                                                            "contragent_name": obj_shipment[way][value][date_m][type_prod_value][prod_value].contragent_name,
+                                                            "count_product": count_product,
+                                                            "count_tare": count_tare
+                                                        };
+                                                    }
+                                                    if ( obj_shipment[way][value][date_m][type_prod_value][prod_value].weight.length>0)
+                                                        count_product++;
+                                                    if (out[way] && out[way][date_m] && out[way][date_m][value]) {
+                                                        out[way][date_m][value].count_product = count_product;
+                                                    }
+                                                })
+                                            } else {
+                                                //console.log(obj_shipment[way][value][date_m][type_prod_value]);
+                                                Object.keys(obj_shipment[way][value][date_m][type_prod_value]).map(function (tare_id) {
+                                                    if (out[way] && out[way][date_m] && out[way][date_m][value]) {
+                                                        if  (+obj_shipment[way][value][date_m][type_prod_value][tare_id].Quantity > 0 )
+                                                            out[way][date_m][value].count_tare += +obj_shipment[way][value][date_m][type_prod_value][tare_id].Quantity;
+                                                        else
+                                                            console.log("error package: ",obj_shipment[way][value][date_m][type_prod_value][tare_id].Quantity)
+
+                                                    }
+                                                })
+
+                                            }
+                                        })
+                                    }
+
+                                })
+                            })
+                            return out;
+                        };
+                        var count=0;
+                        var out={arrival:{},shipment:{}};
+                        out = way_show("shipment",count,out);
+                        out= way_show("arrival",count,out);
+                        res.write(JSON.stringify(out));
+                        res.end();
+                    } else {
+                        function way_show(way, count, out) {
+                            Object.keys(obj_shipment[way]).map(function (value, key) {
+                                Object.keys(obj_shipment[way][value]).map(function (date_m, key_m) {
+                                    b = new Date(date_m);
+                                    var result_interval = interval(b, a);
+                                    if (result_interval.years == 0 && result_interval.months == 0 && result_interval.days <= 1) {
+                                        var show = 0;
+                                        var count_tare = 0;
+                                        var count_product = 0;
+                                        Object.keys(obj_shipment[way][value][date_m]).map(function (type_prod_value, type_prod_key) {
+                                            if (type_prod_value != "package") {
+                                                Object.keys(obj_shipment[way][value][date_m][type_prod_value]).map(function (prod_value, prod_key) {
+                                                    var sum  = obj_shipment[way][value][date_m][type_prod_value][prod_value].weight;
+                                                    var summ = 0;
+                                                    for (var t = 0; t < sum.length; t++) {
+                                                        var st = sum[t];
+                                                        summ = parseFloat(summ) + parseFloat(st);
+                                                    }
+                                                    var contragent_name = obj_shipment[way][value][date_m][type_prod_value][prod_value].price_product.Description;
+                                                    var date_set= date_m.substr(0,10);
+                                                    if  ( !out[way][date_set] ) {out[way][date_set]={}};
+                                                    if ( !out[way][date_set][prod_value] ) { out[way][date_set][prod_value]={"descr":contragent_name,"sum":summ,"UnitOfMeasure":"кг"}}
+                                                    else {
+                                                        out[way][date_set][prod_value].sum +=summ;
+                                                    }
+                                                    count_product++;
+                                                    if (out[way] && out[way][date_m] && out[way][date_m][value]) {
+                                                        out[way][date_m][value].count_product = count_product;
+                                                    }
+                                                })
+                                            } else {
+                                                var date_set= date_m.substr(0,10);
+                                                if ( !out[way][date_set] ){out[way][date_set]={}};
+                                                Object.keys(obj_shipment[way][value][date_m][type_prod_value]).map(function (prod_value, prod_key) {
+
+                                                    if ( !out[way][date_set] ){out[way][date_set][prod_value]={}};
+
+                                                    var p=obj_shipment[way][value][date_m][type_prod_value][prod_value]
+                                                    if  ( p.Quantity > 0) {
+                                                        if (!out[way][date_set][prod_value]) {
+                                                            out[way][date_set][prod_value] = {
+                                                                "descr": p.ItemDescription,
+                                                                "sum": +p.Quantity,
+                                                                "UnitOfMeasure": p.UnitOfMeasure
+                                                            }
+                                                        } else {
+                                                            //console.log("else:",prod_value,date_set,p.Quantity,out[way][date_set][prod_value].sum);
+                                                            out[way][date_set][prod_value].sum +=+p.Quantity;
+                                                        }
+                                                    }
+                                                    /**/
+                                                })
+                                            }
+                                        })
+                                    }
+
+                                })
+                            })
+                            return out;
+                        };
+                        var count = 0;
+                        var out = {arrival: {}, shipment: {}};
+                        out = way_show("shipment", count, out);
+                        out = way_show("arrival", count, out);
+                        res.write(JSON.stringify(out));
+                        res.end();
+                    }
+
+                }
+            });
+        }else {
+            es.write(JSON.stringify({error:"ошибка загрузки файла"}));
+            res.end();
+        }
+
+    })
+app.get("/select_invoice",function(req,res){
+    var out={error:"",file:{}};
+    var obj_shipment={};
+    if ( req.session.file && req.session.file.length>5 ) {
+        console.log(req.query);
+        out.error="вы еще не закрыли предыдущую накладную";
+        res.write(JSON.stringify(out));
+        res.end();
+    }else {
+        console.log("test",req.query);
+        req.session.file=req.query.load_invoice_file;
+        if (fs.existsSync(req.session.file)) {
+            fs.readFile(req.session.file, function readFileCallback(err, data) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    obj_shipment = JSON.parse(data);
+                    out.file=obj_shipment;
+                    res.write(JSON.stringify(out));
+                    res.end();
+                }
+            })
+        }
+    }
+
+});
  app.get('/select',  function(req, res) {
-     var file_json = config.tmp_json+req.sessionID+".json";
+     var file_json;//=config.tmp_json + req.sessionID + ".json";
+/*
+     if (req.session.file == "new") {
+         req.session.regenerate(function (err) {
+             req.session.file = config.tmp_json + req.sessionID + ".json";
+             console.log("new sessionid:", req.session.file);
+         });
+     }*/
+    console.log(req.session.file)
+     if ( req.session.file && req.session.file.length>5 ) {
+	     console.log("file exist:", req.session.file);
+         file_json = req.session.file;
+     }else {
+        console.log("set new file:");
+         req.session.file = config.tmp_json + req.sessionID + ".json";
+         file_json=req.session.file;
+         console.log("session id and file : ",file_json)
+         req.session.regenerate(function (err) {
+             req.session.file = config.tmp_json + req.sessionID + ".json";
+             file_json=req.session.file;
+             console.log("new sessionid:", req.session.file);
+
+         });
+	    console.log(req.session.file);
+     }
      var obj_shipment={};
      var store_price = price.store[points_store.id_in_1c[+req.query.dot_dst]];
      if (!store_price)store_price={};
-     //console.log(" points_store.id_in_1c:", points_store.id_in_1c)
-
-     //console.log("store_price:", store_price, " req.query.dot_dst:",req.query.dot_dst,type_operation: req.query.type_operation, " points_store.id_in_1c[req.query.dot_dst]:",points_store.id_in_1c[+req.query.dot_dst])
      var dst_name="";
      var show_pages='pages/select';
      if (( req.query.dot_dst === undefined ) ||  ( req.query.production === undefined )  ) {
          res.render('pages/error' );
      } else {
-         console.log("req:",req.query);
+         //console.log("req:",req.query);
          if ( req.query.type == "arrival" ) {
              show_pages='pages/select';
-             console.log("11",show_pages);
+             //console.log("11",show_pages);
              dst_name = points_sale.points_sale[req.query.dot_dst];
          }else {
              show_pages='pages/select-shipment';
-             console.log("22",show_pages);
+             //console.log("22",show_pages);
              if (req.query.destination_type=="contragent")
                  dst_name = points_sale.points_sale[req.query.dot_dst];
              else
                  dst_name = points_store.store_catalogue[req.query.dot_dst];
-             console.log("type: ",req.query.type," dst_name: ",dst_name," destination_type: ",req.query.destination_type );
+             //console.log("type: ",req.query.type," dst_name: ",dst_name," destination_type: ",req.query.destination_type );
 
          }
 
          var production =  goods_chicken[req.query.production];
-	     console.log(production);
+	     console.log("read file: ",file_json);
          if (fs.existsSync(file_json)) {
              fs.readFile(file_json, function readFileCallback(err, data) {
                  if (err) {
@@ -295,23 +631,8 @@ module.exports = function(app) {
              });
              obj_shipment.shipment[req.query.production] = {};
              var json = JSON.stringify(obj_shipment);
-
-            // console.log("goods_chicken.package",goods_chicken.package);
-            // console.log("save:",json);
-		    //console.log(production);
              fs.writeFile(file_json, json,  (err) => { if (err) throw err; });
-             //var show_page='pages/select';
-             /*console.log("1", show_page);
-             if ( req.query.type == "arrival" ) {
-                 show_page='pages/select';
-                 console.log("2", show_page);
-             } else {
-                 show_page='pages/select-shipment';
-                 console.log("3", show_page);
-             }*/
-             //show_page='pages/select-shipment';
-             console.log("render", show_page);
-
+//tyt session file
              res.render(show_page, { arr_packages: JSON.stringify(obj_shipment.package),type_operation:req.query.type_operation, destination_type:req.query.destination_type,filter_goods: JSON.stringify(config.filters_goods),rename_goods: JSON.stringify(config.rename_goods),store_price: JSON.stringify(store_price), obj_shipment: JSON.stringify(obj_shipment), ps: req.query.production, name: dst_name, id_dst: req.query.dot_dst, goods_chicken: JSON.stringify(production),file:"1", sort: JSON.stringify(config.sort[req.query.production])} );
          }
 
@@ -328,12 +649,18 @@ module.exports = function(app) {
 	report(req,res);
  })
 
- app.get('/session', function (req,res) { osSTZXZv7PjFrRSaqwAZtaI5KsNM557X
-	res.session.file="ApLiuWP6bI2835WkYN72yINVm55gGSOA.json";
-	 console.log(res.session.file);
+ app.get('/session', function (req,res) {
+     req.session.file="new";
+     res.write(JSON.stringify({session:"ok" }));
+     res.end()
  } );
  function deferred(req,res){
-	 res.render("pages/deferred",{});
+	 console.log(req.session.file);
+	 	var file = {"file":0};
+	 if ( req.session.file ) {
+		 file = {"file": req.session.file};
+	 }
+	 res.render("pages/deferred",{file: JSON.stringify(file) });
 
  }
  function report(req,res){
@@ -343,7 +670,7 @@ module.exports = function(app) {
 
  function ves_add(req,res){
      console.log("-----  ves_add ------");
-     var file_json = config.tmp_json+req.sessionID+".json";
+     var file_json = req.session.file;
      var obj_shipment={};
      if (fs.existsSync(file_json)) {
          fs.readFile(file_json, function readFileCallback(err, data) {
@@ -359,8 +686,8 @@ module.exports = function(app) {
                  if ( goods_chicken[req.query.production] && goods_chicken[req.query.production].product[req.query.id_production] )
                      price_product.Description=goods_chicken[req.query.production].product[req.query.id_production];
 
-                 console.log("eee:",price_product, req.query.production,req.query.id_production);
-                 console.log("eee1:", goods_chicken[req.query.production][req.query.id_production]);
+                 //console.log("eee:",price_product, req.query.production,req.query.id_production);
+                 //console.log("eee1:", goods_chicken[req.query.production][req.query.id_production]);
                  var contact_person="";
                  var shop_name="";
 
@@ -370,9 +697,16 @@ module.exports = function(app) {
                          contact_person = points_store.person[obj_shipment.dst.id_in_1c];
                      else
                          contact_person ="";
-                     if ( obj_shipment.destination_type == "store" ) {
+                     console.log("destination_type: - > ", obj_shipment.dst.destination_type );
+
+                     console.log('shop_name -> ',shop_name);
+
+                     if ( obj_shipment.dst.destination_type == "store" ) {
+                         console.log("STORE!!!",obj_shipment.dst.id)
                          shop_name = points_store.store_catalogue[obj_shipment.dst.id];
+                         console.log("  ->",shop_name)
                      } else {
+                         console.log("no store:",obj_shipment.dst.destination_type)
                          shop_name = points_sale.points_sale[obj_shipment.dst.id];
                      }
                      console.log("shop name : ",shop_name,"end");
@@ -427,7 +761,7 @@ module.exports = function(app) {
                      if (!obj_shipment['contragent_descr'][req.query.production][req.query.id_production])obj_shipment['contragent_descr'][req.query.production][req.query.id_production]="";
 
                  }else {
-                     console.log("не могу сохранить " +req.query.ves+ + "req.query.production: " + req.query.production+" to id product: " +  req.query.id_production );
+                     console.log("не могу сохранить " +req.query.ves+  "req.query.production: " + req.query.production+" to id product: " +  req.query.id_production );
                  }
                  console.log(" contact_person: ",contact_person," shop_name: ",shop_name, " price_product: ", price_product );
 
@@ -458,7 +792,7 @@ module.exports = function(app) {
 
     var get_scan = (req,res)=> {
         //console.log(req.sessionID);
-        var file_json = config.tmp_json+req.sessionID+".json";
+        var file_json = req.session.file;
         if (fs.existsSync(file_json) ){
             var options = {
                 url: 'http://192.168.0.112:5000/',
@@ -473,26 +807,56 @@ module.exports = function(app) {
                     //console.log(body);
                     if (JSON.parse(JSON.stringify(response.body)).scan) {
                         var scan = JSON.parse(JSON.stringify(response.body)).scan;
-                        var code = scan.substr(2,5);
-                        var ves = scan.substr(-5,4)/1000;
-                        var production="";
-			    //303305
-                        if ( code=="03305"  ) { code = "ФР-00000005"; production="chicken"} //pechen
-                        if ( code == "01394"  ) { code = "ФР-00000006"; production="chicken"} //serdce
-                        if ( code  == "01395" ) { code = "ФР-00000007"; production="chicken"} //shlunok
-			            if ( code == "02219" ) { code ="ФР-00000729"; production="chicken"} // tushka svyatkova
 
-                        req.query.id_production=code;
-                        req.query.production=production;
-                        req.query.ves=ves;
+                        function find_id(arr,scan_code,product,code){
+                            var find=0;
+                            var out={}
+                            //scan_code =+scan_code.replace(/\D+/g,"");
+                            arr.map(function (v,i) {
+                                if (scan_code.indexOf(v) > 0 && scan_code.indexOf(v) < 5) {
+                                    find=1;
+                                    scan_code =+scan_code;
+                                    scan_code =scan_code+"";
+                                    var ves= scan_code.substr(-5,4)/1000;
+                                    out= {production:product,code:code,ves:ves}
+                                }
+                            });
+                            if (find ==0){
+                                out= {production:"",code:"",ves:""}
+                            }
+                            return out;
+                        }
+                        var arr_out={};
+                        if (!arr_out.production || arr_out.production.length<2) {
+                            arr_out = find_id(["03305", "03242", "013948", "01198", "01197", "008580", "008579"], scan, "chicken", "ФР-00000005") // pechen
+                        }
+                        if (!arr_out.production || arr_out.production.length<2) {
+                            arr_out = find_id(["013949", "03243", "03306", "01200", "01199", "008582", "008581"], scan, "chicken", "ФР-00000006"); // serdce
+                        }
+                        if (!arr_out.production || arr_out.production.length<2) {
+                            arr_out = find_id(["01395", "008583", "008584", "2301201", "2301202", "03307", "03241", "03244"], scan, "chicken", "ФР-00000007"); // shlunok
+                        }
+                        if (!arr_out.production || arr_out.production.length<2) {
+                            arr_out=find_id(["022199","022200","21664","70277" ],scan,"chicken","ФР-00000729");// tushka svyatkova
+                        }
+                        if (!arr_out.production || arr_out.production.length<2) {
+                            arr_out=find_id(["021837", "021804", "04764", "021805","04765"],scan,"chicken","ФР-00000602");// Айдахо
+                        }
+
+                        if (!arr_out.production || arr_out.production.length<2) {
+                            arr_out={production:"",code:"",ves:""}
+                        }
+
+                        console.log(arr_out)
+                        req.query.id_production=arr_out.code;
+                        req.query.production=arr_out.production;
+                        req.query.ves=arr_out.ves;
                         req.query.tare=0;
                         req.query.type_tare="ФР-00000605";
-
-                        console.log(code,production,ves,req.query.type_tare);
-			    if (code.length > 8 ) {
+			    if (arr_out.code.length > 8 ) {
 	                        ves_add(req,res);
 			    }else {
-				    console.log("ne nashel cod",code );
+				    console.log("ne nashel cod",arr_out.code );
 			    }
                     }
                 }
@@ -506,7 +870,7 @@ module.exports = function(app) {
 
 
  app.get('/add_tare', function( req,res ) {
-	var file_json = config.tmp_json+req.sessionID+".json";
+	var file_json = req.session.file;
 	var obj_shipment = {};
 	if (fs.existsSync(file_json)) {
 		fs.readFile(file_json, function readFileCallback(err, data) {
@@ -528,64 +892,8 @@ module.exports = function(app) {
 
  })
 
- // app.get('/change_tare', function(req, res) {
- //    var file_json = config.tmp_json+req.sessionID+".json";
- //    var obj_shipment = {};
- //    if (fs.existsSync(file_json)) {
- //        fs.readFile(file_json, function readFileCallback(err, data) {
- //            if (err) {
- //                console.log("err:" + err);
- //            } else {
- //                console.log("req.query:",req.query);
- //                obj_shipment = JSON.parse(data);
- //                var find=0;
- //                Object.keys(obj_shipment.package).map((t)=>{
-	// 		    console.log(t.indexOf('0000'));
- //                    if ( t.indexOf("0000") <0) {
- //                        var key=Object.keys(obj_shipment.package[t])[0];
- //                        if ( find ==0 ) {
- //                            obj_shipment.package[t][key][0] = +req.query.tare;
- //                            obj_shipment.type_package[t][key][0]=req.query.id_tare;
- //                            find=1;
- //                        }
- //                        else  {
- //                            obj_shipment.package[t][key][0] = 0;
- //                            obj_shipment.type_package[t][key][0] = "ФР-00000605";
- //                        }
- //                    }
- //                } )
-	// 	console.log(obj_shipment.package);
- //                var json = JSON.stringify(obj_shipment);
- //                fs.writeFile(file_json, json,  (err) => { if (err) throw err; });
- //            }
- //        });
- //    } else {
- //        res.render('pages/error');
- //    }
- // });
-
- // app.get('/change_tare_old050219', function(req, res) {
- //     var file_json = config.tmp_json+req.sessionID+".json";
- //     var obj_shipment = {};
- //     if (fs.existsSync(file_json)) {
- //         fs.readFile(file_json, function readFileCallback(err, data) {
- //             if (err) {
- //                 console.log("err:" + err);
- //             } else {
- //                 obj_shipment = JSON.parse(data);
- //                 //console.log(req.query);
- //                 obj_shipment.dst["tare"]=req.query.tare;
- //                 var json = JSON.stringify(obj_shipment);
- //                 fs.writeFile(file_json, json,  (err) => { if (err) throw err; });
- //             }
- //         });
- //     } else {
- //         res.render('pages/error');
- //     }
- // });
-
  app.get('/weight_change', function(req, res) {
-     var file_json = config.tmp_json+req.sessionID+".json";
+     var file_json = req.session.file;
      var obj_shipment={};
      if (fs.existsSync(file_json)) {
          fs.readFile(file_json, function readFileCallback(err, data) {
@@ -619,7 +927,8 @@ module.exports = function(app) {
      if (( req.query.dot_dst === undefined ) ||  ( req.query.id_production === undefined )  ) {
          res.render('pages/error' );
      } else {
-         var file_json = config.tmp_json+req.sessionID+".json";
+         var file_json = req.session.file;
+	     console.log("read file:",file_json);
          var obj_shipment={};
          if (fs.existsSync(file_json)) {
              fs.readFile(file_json, function readFileCallback(err, data) {
@@ -668,10 +977,11 @@ module.exports = function(app) {
  });
 
  app.get('/del_order', function(req, res) {
-     var file_json = config.tmp_json+req.sessionID+".json";
+     var file_json = req.session.file;
      console.log(file_json);
      if (fs.existsSync(file_json)){
       fs.unlinkSync(file_json);
+      req.session.file="";
       if (fs.existsSync(file_json)) {
          res.render('pages/error' );
       }
@@ -754,7 +1064,7 @@ app.get('/get_weight_arr', function(req, res) {
 
 
 app.get('/get_weight', function(req, res) {
- console.log( "get: ",config.weight_url[0] );
+
 	
    axios.get(config.weight_url[0])
   .then(response => {
@@ -799,9 +1109,9 @@ app.get('/get_weight', function(req, res) {
 
 
  app.get('/sel_products', function(req, res) {
-    var file_json = config.tmp_json+req.sessionID+".json";
+    var file_json = req.session.file;
     var obj_shipment={};
-
+    console.log("file_json", file_json,"session:",req.session);
     if (fs.existsSync(file_json)) {
         fs.readFile(file_json, function readFileCallback(err, data) {
             if (err) {
@@ -809,24 +1119,24 @@ app.get('/get_weight', function(req, res) {
                 res.render('pages/error' );
             } else {
                 obj_shipment = JSON.parse(data);
-                console.log("tyy;",obj_shipment, "type:", obj_shipment.type);
-            }
-        });
-    }
-
-
-    if (fs.existsSync(file_json) && obj_shipment.type &&  obj_shipment) {
- //       if (obj_shipment.type == "shipment") {
-            console.log("load STORE o", obj_shipment.type);
+                //console.log("tyy;",obj_shipment, "type:", obj_shipment.type);
+	//console.log("test:",obj_shipment.type,obj_shipment)
+    	if (fs.existsSync(file_json) && obj_shipment &&  obj_shipment.type) {
+            console.log("load STORE", obj_shipment.type);
             res.render('pages/sel_products', {
                 dst_point: obj_shipment.dst.id,
                 type_operation: obj_shipment.type,
                 points_store: JSON.stringify(points_store),
-		points_contragent: JSON.stingify(points_sale),
+		points_contragent: JSON.stringify(points_sale),
 		filters: JSON.stringify(config.filters),
+		sort: JSON.stringify(config.sort.contragetn_and_store),
 		file:"1"
             });
-    }else {
+	}
+	}
+	})
+
+    } else {
         console.log(req.query)
             console.log("load STORE", req.query.type);
             var f_points_store=filter_json.filter_out(points_store);
@@ -837,12 +1147,13 @@ app.get('/get_weight', function(req, res) {
                 type_operation: req.query.type,
                 points_store: JSON.stringify(f_points_store),
 		points_contragent: JSON.stringify(points_sale),
+		sort: JSON.stringify(config.sort.contragetn_and_store),
 		filters: JSON.stringify(config.filters)
 	    });
     }
  });
     app.get('/', function(req, res) {
-        var file_json = config.tmp_json+req.sessionID+".json";
+        var file_json = req.session.file;
         var obj_shipment;
         if (fs.existsSync(file_json)) {
             fs.readFile(file_json, function readFileCallback(err, data) {
@@ -886,17 +1197,19 @@ function copyFile(source, target, cb) {
 }
 
 app.get('/send_to_1c', function (req,res) {
-    var save_json = config.tmp_json+req.sessionID+".json";
+    var save_json = req.session.file;
     console.log("file:",save_json);
     var newnamejson = new Date(Date.now()+2*60*60*1000);
     newnamejson= newnamejson.toISOString().replace(/T/, ' ').replace(/\..+/, '').replace(/ /,'_').replace(/:/g,'-')+".json";
+	req.session.file="";
     res.render('pages/send_to_1c', {message: ["ok"]});
     copyFile(save_json,config.to_send_1c+"/"+newnamejson,function(ret){console.log(ret)});
     fs.unlinkSync(save_json);
 })
  app.get('/create_invoice', function (req,res ) {
-	var save_json = config.tmp_json+req.sessionID+".json";
+	var save_json = req.session.file;
 	console.log("file:",save_json);
+	var old_production = req.query.production?req.query.production:"0";
 	var file;
 	 if (fs.existsSync(save_json)){
 		 fs.readFile(save_json, function readFileCallBack(err,data) {
@@ -922,6 +1235,7 @@ app.get('/send_to_1c', function (req,res) {
 		            json: JSON.stringify(file),
 		            price: JSON.stringify(store_price),
 		            goods_chicken: JSON.stringify(goods_chicken),
+			    old_url_production: old_production,
 			    file:"0"
 		        });			
 		}else {
@@ -930,6 +1244,7 @@ app.get('/send_to_1c', function (req,res) {
 		            json: JSON.stringify(file),
 		            price: JSON.stringify(store_price),
 		            goods_chicken: JSON.stringify(goods_chicken),
+			    old_url_production: old_production,
 			    file:"0"
 		        });
 		}
@@ -953,10 +1268,11 @@ app.get('/send_to_1c', function (req,res) {
  });
 
  app.get('/create_excel', function (req,res ) {
- 	var save_json=config.tmp_json+req.sessionID+".json"
-     console.log("file:",save_json);
+	
+ 	//var save_json=config.tmp_json+req.sessionID+".json"
+     console.log("read file dlya create exelc file:",req.session.file);
 	var save_json_file;
-	if (fs.existsSync(save_json)) {
+	if (fs.existsSync(req.session.file)) {
 		fs.readFile(save_json, function readFileCallback(err, data) {
 		 if (err) {
 			console.log(err);
@@ -980,6 +1296,27 @@ app.get('/send_to_1c', function (req,res) {
 
  });
 
+app.get('/reload_data', function(req,res){
+    var file_json = req.session.file;
+    var obj_shipment={};
+    console.log("file:",file_json);
+    if (fs.existsSync(file_json)) {
+        fs.readFile(file_json, function readFileCallback(err, data) {
+            if (err) {
+                console.log(err);
+                res.render('pages/error');
+            } else {
+                obj_shipment = JSON.parse(data);
+
+                res.write(JSON.stringify(obj_shipment));
+                res.end();
+            }
+        });
+    }else {
+        res.write(JSON.stringify({"error":"не смог прочесть файл"}));
+        res.end();
+    }
+})
 
     app.get('/background_scan',  function(req, res) {
         get_scan(req,res);
@@ -987,13 +1324,13 @@ app.get('/send_to_1c', function (req,res) {
  app.get('/type_select', function(req, res) {
      var store_price = price.store[points_store.id_in_1c[req.query.dot_dst]];
      console.log("req.query.dot_dst: ", req.query)
+ 	console.log("session:",req.session    );
      if ( req.query.dot_dst === undefined ) {
          res.render('pages/error' );
      } else {
-        console.log(req.sessionID);
-        var file_json = config.tmp_json+req.sessionID+".json";
-	console.log("session saved file: ",req.session.file);
+        var file_json = req.session.file;
         var obj_shipment={};
+        console.log("probobly load: " ,file_json);
         if (fs.existsSync(file_json)) {
              //console.log("read files он уже есть :D");
              fs.readFile(file_json, function readFileCallback(err, data) {
